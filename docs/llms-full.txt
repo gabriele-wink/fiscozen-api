@@ -37,19 +37,42 @@ Key facts:
 
 # Full README
 
+
+  
+    
+    
+  
+
 fiscozen-api
+
   Unofficial PHP client and MCP server for Fiscozen: invoices, customers, expenses, taxes and documents for Italian freelancers (partita IVA), usable from code or from Claude and ChatGPT.
+
+  
+  
+  
+  
+
 Landing page (italiano)
+
 > [!IMPORTANT]
 > **Progetto non ufficiale.** fiscozen-api è un progetto open source indipendente: non è sviluppato, approvato né supportato da Fiscozen S.p.A. e non ha alcun legame con l'azienda.
+
 > [!WARNING]
-> This project is **not affiliated with, endorsed by or supported by Fiscozen S.p.A.** It uses the private web API of `app.fiscozen.it`, found by observing the web app, and it may break without notice. The Fiscozen name and logo belong to their owners and appear here only to identify the service. Invoices created and sent to SDI are legally binding: review what you automate.
+> This project is **not affiliated with, endorsed by or supported by Fiscozen S.p.A.** It uses the private web API of `app.fiscozen.it`, found by observing the web app, and it may break without notice. The Fiscozen name belongs to its owner and appears here only to identify the service; this project does not use the Fiscozen logo. Invoices created and sent to SDI are legally binding: review what you automate.
+
+## In italiano
+
+**fiscozen-api** è un client PHP e un server MCP open source, **non ufficiale**, per usare il tuo account Fiscozen da codice e dagli assistenti AI: crea e scarica **fatture elettroniche** (PDF e XML FatturaPA), gestisci **clienti e fornitori**, leggi **spese**, **scadenze F24** e **documenti**, automatizza la **fatturazione del tuo SaaS** e chiedi a **Claude** o **ChatGPT** come va l'anno. Pensato per freelance e sviluppatori con **partita IVA**, anche in **regime forfettario**. Ogni accesso richiede il codice SMS dell'account. Non affiliato a Fiscozen S.p.A. Landing page: https://gabriele-wink.github.io/fiscozen-api/
+
 ---
+
 ## Features
+
 ### Authentication
 - [x] Email and password login (django-allauth headless)
 - [x] SMS two-factor authentication. The client never bypasses it and never registers a trusted device, so **a new SMS code is required every time the session expires**: unattended automation stops until someone enters it
 - [x] Session status check and logout
+
 ### Invoices (*fatture emesse*)
 - [x] List invoices by section: archive, to collect (*da incassare*), to send (*da inviare*), with pagination
 - [x] Invoice detail: lines, totals, customer, SDI status
@@ -60,10 +83,19 @@ Landing page (italiano)
 - [x] **Send to SDI** (opt-in in the MCP server)
 - [x] Mark an invoice as paid
 - [x] Next invoice number per year, collection methods (IBAN...), VAT codes for your fiscal regime, document reasons (TD01, TD06...)
+
 ### Customers and suppliers (*clienti / fornitori*)
 - [x] List and search customers and suppliers
 - [x] Find a customer by VAT number or *codice fiscale*
 - [x] **Create**, **update** (versioned records) and **delete**
+
+### SdI (Sistema di Interscambio)
+- [x] Normalised SdI status of every invoice: to send, pending, delivered, made available (*messa a disposizione*), rejected (*scartata*), accepted or refused by a PA
+- [x] List of invoices that need action, with the 5-day resend deadline for rejected ones
+- [x] Pre-flight checks against common rejection causes: VAT number and *codice fiscale* checksums, recipient code (7 chars, `0000000`, `XXXXXXX`), PEC, PA CUU, address, 12-day emission deadline, stamp duty over 77,47 €
+- [x] Archive export of PDF and FatturaPA XML with a SHA-256 manifest (a backup copy: legal 10-year *conservazione a norma* still needs an accredited service)
+- [x] E-invoices received from SdI
+
 ### Other data
 - [x] Credit notes: list, detail, PDF and XML
 - [x] Occasional-work receipts (*prestazioni occasionali*) with PDF
@@ -73,8 +105,9 @@ Landing page (italiano)
 - [x] Document archive with download
 - [x] In-app notifications
 - [x] Profile, subscriptions, fiscal regime, real-time yearly turnover
+
 ### MCP server (Claude, ChatGPT and any MCP client)
-- [x] 33 tools, plus `send_invoice_to_sdi` when enabled
+- [x] 40 tools, plus `send_invoice_to_sdi` when enabled
 - [x] **stdio** transport (Claude Desktop, Claude Code, Codex CLI, Cursor...)
 - [x] **Streamable HTTP** transport (ChatGPT connectors, OpenAI Responses API, Claude API MCP connector)
 - [x] `search` and `fetch` tools in the shape ChatGPT connectors and deep research expect
@@ -82,8 +115,11 @@ Landing page (italiano)
 - [x] Login from the chat: the assistant asks you for the SMS code
 - [x] PDFs and documents returned as embedded files
 - [x] No dependencies beyond Guzzle
+
 ---
+
 ## Install
+
 ```bash
 git clone  fiscozen-api && cd fiscozen-api
 composer install
@@ -92,23 +128,31 @@ chmod 600 .credentials.txt
 php bin/login.php           # sends the SMS code
 php bin/login.php 123456    # confirms it, and the session is saved to .session.json
 ```
+
 `.credentials.txt` and `.session.json` are in `.gitignore`. Never commit them.
+
 ---
+
 ## PHP library
+
 ```php
 use FiscozenApi\Fiscozen;
+
 $fz = new Fiscozen('.session.json');
+
 // read
 foreach ($fz->allInvoices(Fiscozen::SECTION_TO_COLLECT) as $inv) {
     echo "{$inv['full_id']}  {$inv['amount']} EUR  {$inv['counterpart_version_display_name']}\n";
 }
 file_put_contents('invoice.pdf', $fz->invoicePdf($id));
+
 // customer
-$c = $fz->findCustomer('12345678901') ?? $fz->createCustomer([
-    'typology' => 'SOCI', 'business_name' => 'ACME S.R.L.', 'vat' => '12345678901',
+$c = $fz->findCustomer('12345678903') ?? $fz->createCustomer([
+    'typology' => 'SOCI', 'business_name' => 'ACME S.R.L.', 'vat' => '12345678903',
     'address' => 'Via Roma 1', 'municipality' => 'Milano', 'postcode' => '20100', 'province' => 'MI',
     'country' => 'IT', 'recipient_code' => 'ABC1234',
 ]);
+
 // invoice: preview -> create -> (optionally) send
 $payload = $fz->buildInvoice($c['counterpart_version'], [
     ['description' => 'Pro plan subscription - November 2026', 'amount' => 49.90],
@@ -117,7 +161,9 @@ $preview = $fz->computeInvoice($payload);   // full_id, total_amount, all_notes.
 $inv     = $fz->createInvoice($payload);    // numbered, status DA_INCASSARE / e_status TO_SEND
 // $fz->sendInvoiceToSdi($inv['id']);       // IRREVERSIBLE
 ```
+
 All methods
+
 | Area | Methods |
 | --- | --- |
 | Auth | `login()`, `verifyMfa()`, `isAuthenticated()`, `session()`, `logout()` |
@@ -128,20 +174,28 @@ All methods
 | Receipts | `allReceipts()`, `receiptPdf()` |
 | Expenses | `listExpenses()`, `allExpenses()`, `expense()` |
 | Customers / suppliers | `allCustomers()`, `allProviders()`, `counterpart()`, `counterpartByVersion()`, `findCustomer()`, `createCustomer()`, `createProvider()`, `updateCounterpart()`, `deleteCounterpart()`, `counterpartChoices()` |
+| SdI | `sdiStatus()`, `sdiProblems()`, `sdiSummary()`, `checkCustomerForSdi()`, `checkInvoice()`, `archiveInvoices()`, `allReceivedEInvoices()`, `receivedEInvoiceReceipt()`; offline helpers in `Sdi::` (`isValidVat()`, `isValidTaxCode()`, `checkCustomer()`, `issueDeadline()`, `resendDeadline()`, `stampDutyDue()`) |
 | Taxes | `taxPayments()`, `taxForecasts()`, `taxDeclarations()` |
 | Documents | `allDocuments()`, `downloadDocument()` |
 | Notifications | `allNotifications()` |
 | Low level | `get()`, `post()`, `patch()`, `delete()`, `request()`, `download()`, `paginate()` |
+
 `list*` methods return one DRF page (`count`, `next`, `results`). `all*` methods return a `Generator` over every page.
+
 Rules enforced by Fiscozen
+
 - Customer `typology`: `PRIV` private person, `PROF` professional, `SOCI` company, `PA` public administration, `NOPR` non-profit.
 - An Italian company requires a valid `vat`. An Italian private person requires a valid `ssn` (*codice fiscale*). Foreign customers use `recipient_code` `XXXXXXX`.
 - Customer records are versioned: an update creates a new `counterpart_version`, and existing invoices keep the old one.
 - A line's `vat_code` accepts a code string such as `NI3`, `VAT22` or `RC02`. The default comes from the fiscal regime: flat-rate `NI3`, *minimi* `NS27`, ordinary `VAT22`.
 - `compute_data` and create return HTTP 500 if the `update_*_from_db` flags are sent. `buildInvoice()` omits them.
+
 ---
+
 ## MCP server
+
 ### Tools
+
 | Tool | Kind | What it does |
 | --- | --- | --- |
 | `auth_status`, `login_start`, `login_verify` | auth | Session check and SMS login from the chat |
@@ -152,14 +206,20 @@ Rules enforced by Fiscozen
 | `list_expenses`, `list_tax_payments`, `get_tax_forecasts` | read | Expenses and taxes |
 | `list_documents`, `get_document` | read | Document archive |
 | `list_payment_methods`, `list_vat_codes` | read | Lookups for invoicing |
+| `get_sdi_status`, `list_sdi_problems`, `get_sdi_summary` | read | SdI state of issued invoices: rejected, not delivered, PA outcome |
+| `check_customer_for_sdi`, `check_invoice`, `validate_tax_id` | read | Pre-flight checks that prevent SdI rejections |
+| `list_received_einvoices` | read | E-invoices received from SdI |
 | `search`, `fetch` | read | ChatGPT connector and deep research format |
 | `preview_invoice` | read | Server-side computation, nothing created |
 | `create_customer`, `update_customer` | write | Customers |
 | `create_invoice`, `update_invoice`, `mark_invoice_paid` | write | Invoices (not sent) |
 | `delete_customer`, `delete_invoice` | destructive | Only for records that can still be deleted |
 | `send_invoice_to_sdi` | **irreversible** | Only with `FISCOZEN_MCP_ALLOW_SDI=1`, and requires `confirm: true` |
+
 Every tool carries MCP annotations (`readOnlyHint`, `destructiveHint`), so clients can ask you before running write tools.
+
 ### Configuration
+
 | Variable | Default | Meaning |
 | --- | --- | --- |
 | `FISCOZEN_SESSION_FILE` | `./.session.json` | Session cookie file |
@@ -170,8 +230,11 @@ Every tool carries MCP annotations (`readOnlyHint`, `destructiveHint`), so clien
 | `FISCOZEN_MCP_TOKEN` | – | **Required** for HTTP: bearer token |
 | `FISCOZEN_MCP_ALLOW_QUERY_TOKEN` | `0` | `1` also accepts `?key=`, for UIs that can't send headers |
 | `FISCOZEN_MCP_ALLOWED_ORIGINS` | chatgpt.com, claude.ai | Allowed `Origin` values (DNS-rebinding protection) |
+
 ### Claude Desktop
+
 `claude_desktop_config.json`:
+
 ```json
 {
   "mcpServers": {
@@ -183,29 +246,40 @@ Every tool carries MCP annotations (`readOnlyHint`, `destructiveHint`), so clien
   }
 }
 ```
+
 ### Claude Code
+
 ```bash
 claude mcp add fiscozen -- php /absolute/path/fiscozen-api/bin/mcp-server.php
 ```
+
 ### Codex CLI / Cursor
+
 ```toml
 # ~/.codex/config.toml
 [mcp_servers.fiscozen]
 command = "php"
 args = ["/absolute/path/fiscozen-api/bin/mcp-server.php"]
 ```
+
 ```json
 // .cursor/mcp.json
 { "mcpServers": { "fiscozen": { "command": "php", "args": ["/absolute/path/fiscozen-api/bin/mcp-server.php"] } } }
 ```
+
 ### Remote HTTP server (ChatGPT, OpenAI API, Claude API)
+
 ```bash
 FISCOZEN_MCP_TOKEN=$(openssl rand -hex 32) php -S 127.0.0.1:8787 public/mcp.php
 # endpoint: http://127.0.0.1:8787/mcp   header: Authorization: Bearer 
 ```
+
 For production, serve `public/mcp.php` behind HTTPS with nginx, Caddy or Apache, using any PHP-FPM setup.
+
 **ChatGPT** (Settings, then Connectors, then Developer mode, then Add custom connector): the UI only supports OAuth or no authentication. Start the server with `FISCOZEN_MCP_ALLOW_QUERY_TOKEN=1` and use the URL `https://your-host/mcp?key=`.
+
 **OpenAI Responses API**:
+
 ```python
 client.responses.create(
     model="gpt-5",
@@ -218,7 +292,9 @@ client.responses.create(
     input="How much did I invoice this year, and which invoices are still unpaid?",
 )
 ```
+
 **Claude API** (MCP connector):
+
 ```python
 client.beta.messages.create(
     model="claude-opus-5-5", max_tokens=4096,
@@ -228,9 +304,13 @@ client.beta.messages.create(
     betas=["mcp-client-2025-04-04"],
 )
 ```
+
 **claude.ai** (custom connector): same limitation as ChatGPT. Use the `?key=` URL.
+
 ---
+
 ## CLI
+
 ```bash
 php bin/login.php [sms-code]                                   # login
 php bin/smoke.php                                              # read-only test of every method
@@ -239,7 +319,9 @@ php bin/invoice.php  ""             # create + save the PDF
 php bin/invoice.php  ""  --send     # create + send to SDI (irreversible)
 php bin/mcp-server.php                                         # MCP stdio server
 ```
+
 ## Project layout
+
 ```
 src/
   FiscozenClient.php     auth (allauth + SMS 2FA), session, HTTP transport, pagination
@@ -248,9 +330,11 @@ src/
   Mcp/FiscozenTools.php  MCP tool definitions
 bin/                     CLI tools and the stdio MCP server
 public/mcp.php           Streamable HTTP MCP endpoint
-assets/                  logo
+assets/                  project logo (vector)
 ```
+
 ## Test status
+
 | Area | Status |
 | --- | --- |
 | All read methods and downloads | live-tested: 26/26 pass |
@@ -258,13 +342,26 @@ assets/                  logo
 | `computeInvoice`, `createInvoice`, `invoicePdf`, `updateInvoice`, `deleteInvoice` | live-tested with a 1 € invoice, then deleted; numbering restored |
 | MCP stdio and HTTP: initialize, tools/list, tools/call, auth, origin check | tested |
 | `sendInvoiceToSdi`, `markInvoicePaid`, `invoicePreviewXml` | **not tested live** (real tax submission) |
+
 ## Security notes
+
 - The session file grants full access to the Fiscozen account. Keep it private: the library writes it with mode `0600`.
 - The HTTP server refuses to start without `FISCOZEN_MCP_TOKEN`. Serve it over HTTPS only.
 - Keep `FISCOZEN_MCP_ALLOW_SDI` off unless you need it. Even when it's on, the tool requires `confirm: true`.
 - Prefer `FISCOZEN_MCP_READONLY=1` for assistants that only need to answer questions.
+
+## Help & support
+
+Questions, bugs, or help setting it up:
+
+- Email: [gabriele@windroses.world](mailto:gabriele@windroses.world)
+- Bugs and feature requests: [GitHub issues](https://github.com/gabriele-wink/fiscozen-api/issues)
+
+This is community support for an unofficial project. For problems with your Fiscozen account, contact Fiscozen directly.
+
 ## License
-[MIT](LICENSE). The Fiscozen name and logo are trademarks of their owners and are not covered by the license.
+
+[MIT](LICENSE). The Fiscozen name is a trademark of its owner and is not covered by the license.
 
 
 ---
@@ -294,6 +391,13 @@ assets/                  logo
 - `get_tax_forecasts` (read-only): Forecast of upcoming taxes and contributions.
 - `list_documents` (read-only): Documents archive (tax returns, F24 receipts, contracts...).
 - `get_document` (read-only): Download a document from the archive. Parameters: id (required).
+- `get_sdi_status` (read-only): SdI status of an issued invoice with its meaning: to send, pending, delivered, made available (not delivered), rejected (scartata), accepted/refused by a PA, plus SdI errors. Parameters: id (required).
+- `list_sdi_problems` (read-only): Issued invoices that need action on the SdI side: rejected (resend within 5 days), not delivered (tell the customer), refused by a PA, or still to send.
+- `get_sdi_summary` (read-only): Number of issued invoices per SdI state.
+- `check_customer_for_sdi` (read-only): Check a customer against SdI delivery rules before invoicing: recipient code (7 chars, 0000000 consumers, XXXXXXX foreign), PEC, PA CUU, VAT number and tax code checksums, address. Parameters: id (required).
+- `check_invoice` (read-only): Pre-flight check of an invoice before creating or sending it: customer SdI data, 12-day emission deadline from the operation date, stamp duty. Nothing is created. Parameters: customer_tax_id, counterpart_version, rows (required), invoice_date, payment_method_id, payment_due_date, notes, is_e_invoice, e_doc_data, operation_date.
+- `validate_tax_id` (read-only): Validate an Italian VAT number (partita IVA, 11 digits) or tax code (codice fiscale) checksum offline. Wrong numbers are a common cause of SdI rejection. Parameters: tax_id (required).
+- `list_received_einvoices` (read-only): E-invoices received from SdI (supplier invoices addressed to you).
 - `search` (read-only): Search Fiscozen invoices, customers and documents. Returns ids usable with fetch. Parameters: query (required).
 - `fetch` (read-only): Fetch a search result by id (invoice:<id>, customer:<id>, document:<id>). Parameters: id (required).
 - `create_customer` (write): Create a customer. Italian companies need vat, Italian private persons need ssn. Returns counterpart (id) and counterpart_version (for invoices). Parameters: typology (required), business_name, first_name, last_name, vat, ssn, address (required), municipality (required), postcode (required), province, country, recipient_code, pec, email, phone.

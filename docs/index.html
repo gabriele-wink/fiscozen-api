@@ -530,6 +530,8 @@ footer { padding-top: 96px; padding-bottom: 40px; }
     <article class="case rise"><svg class="stamp-ico" style="color:var(--accent)" aria-hidden="true"><use href="#stamp"/></svg><div><h3>Scadenze F24 senza sorprese</h3><p>Puoi programmare un'attività giornaliera che legge <code>taxPayments()</code> e <code>taxForecasts()</code> e ti avvisa su Slack o via email delle scadenze dei prossimi 30 giorni.</p></div></article>
     <article class="case rise" style="--d:1"><svg class="stamp-ico" style="color:var(--accent)" aria-hidden="true"><use href="#stamp"/></svg><div><h3>Archivio di PDF e XML dove vuoi</h3><p><code>invoicePdf()</code>, <code>invoiceXml()</code> e <code>downloadDocument()</code> scaricano PDF, XML in formato FatturaPA e altri documenti, che puoi poi archiviare su Drive, S3 o nel gestionale.</p></div></article>
     <article class="case rise"><svg class="stamp-ico" style="color:var(--accent)" aria-hidden="true"><use href="#stamp"/></svg><div><h3>Incassi aggiornati dal tuo software</h3><p>Quando Stripe o la banca confermano un pagamento, <code>markInvoicePaid()</code> sposta la fattura da "da incassare" all'archivio con data e metodo.</p></div></article>
+    <article class="case rise"><svg class="stamp-ico" style="color:var(--accent)" aria-hidden="true"><use href="#stamp"/></svg><div><h3>Meno scarti dallo SdI</h3><p>Prima di creare la fattura, <code>checkInvoice()</code> controlla partita IVA e codice fiscale, codice destinatario, PEC o CUU, termine dei 12 giorni e bollo. Dopo l'invio, <code>sdiProblems()</code> elenca scartate e non consegnate, con il termine di 5 giorni per rinviare.</p></div></article>
+    <article class="case rise" style="--d:1"><svg class="stamp-ico" style="color:var(--accent)" aria-hidden="true"><use href="#stamp"/></svg><div><h3>Copia d'archivio di fine anno</h3><p><code>archiveInvoices()</code> salva PDF e XML FatturaPA dell'anno con un manifest di impronte SHA-256. È una copia di sicurezza: la conservazione a norma per 10 anni richiede un servizio accreditato.</p></div></article>
     <article class="case rise" style="--d:1"><svg class="stamp-ico" style="color:var(--accent)" aria-hidden="true"><use href="#stamp"/></svg><div><h3>Report e dashboard su misura</h3><p><code>allInvoices()</code>, <code>allExpenses()</code> e <code>allCustomers()</code> restituiscono tutto, pagina dopo pagina, pronto per un foglio di calcolo.</p></div></article>
   </div>
 </section>
@@ -599,6 +601,8 @@ footer { padding-top: 96px; padding-bottom: 40px; }
       <li><code>list_customers</code><span>lettura</span></li><li><code>find_customer</code><span>lettura</span></li><li><code>create_customer</code><span>scrittura</span></li><li><code>update_customer</code><span>scrittura</span></li><li><code>delete_customer</code><span>scrittura</span></li><li><code>list_providers</code><span>lettura</span></li></ul></div>
     <div class="rise" style="--d:1"><h3>Documenti e tasse</h3><ul>
       <li><code>list_credit_notes</code><span>lettura</span></li><li><code>list_expenses</code><span>lettura</span></li><li><code>list_tax_payments</code><span>lettura</span></li><li><code>get_tax_forecasts</code><span>lettura</span></li><li><code>list_documents</code><span>lettura</span></li><li><code>get_document</code><span>lettura</span></li></ul></div>
+    <div class="rise"><h3>Sistema di Interscambio</h3><ul>
+      <li><code>get_sdi_status</code><span>lettura</span></li><li><code>list_sdi_problems</code><span>lettura</span></li><li><code>get_sdi_summary</code><span>lettura</span></li><li><code>check_customer_for_sdi</code><span>lettura</span></li><li><code>check_invoice</code><span>lettura</span></li><li><code>validate_tax_id</code><span>lettura</span></li><li><code>list_received_einvoices</code><span>lettura</span></li></ul></div>
     <div class="rise" style="--d:2"><h3>Per gli assistenti</h3><ul>
       <li><code>search</code><span>lettura</span></li><li><code>fetch</code><span>lettura</span></li><li><code>list_vat_codes</code><span>lettura</span></li><li><code>list_payment_methods</code><span>lettura</span></li></ul></div>
   </div>
@@ -613,7 +617,7 @@ footer { padding-top: 96px; padding-bottom: 40px; }
     </div>
     <form class="panel rise" style="--d:1" data-invoice onsubmit="return false" aria-label="Anteprima fattura">
       <div class="ph"><b>Nuova fattura</b><span>regime forfettario</span></div>
-      <label class="fld">P.IVA o codice fiscale del cliente<input name="tax" value="12345678901" autocomplete="off"></label>
+      <label class="fld">P.IVA o codice fiscale del cliente<input name="tax" value="12345678903" autocomplete="off"></label>
       <div class="lines" data-lines></div>
       <button class="add" type="button" data-add>+ Aggiungi una riga</button>
       <div class="totals" aria-live="polite">
@@ -705,7 +709,7 @@ document.documentElement.classList.add('js');
   const steps = [
     ['terminale', '<span class="k">git clone</span> https://github.com/gabriele-wink/fiscozen-api\n<span class="k">cd</span> fiscozen-api && <span class="k">composer install</span>\n\n<span class="c"># riga 1 email, riga 2 password (esclusi da git)</span>\nprintf \'%s\\n%s\\n\' \'tu@esempio.it\' \'password\' > .credentials.txt\nchmod 600 .credentials.txt'],
     ['terminale', '<span class="k">php</span> bin/login.php\n<span class="c">MFA richiesta (sms): SMS inviato.</span>\n\n<span class="k">php</span> bin/login.php 123456\n<span class="c">OK: autenticato, sessione salvata in .session.json</span>'],
-    ['invoice.php', '<span class="k">$fz</span> = new Fiscozen(<span class="s">\'.session.json\'</span>);\n\n<span class="k">$c</span> = $fz->findCustomer(<span class="s">\'12345678901\'</span>);\n<span class="k">$p</span> = $fz->buildInvoice($c[<span class="s">\'counterpart_version\'</span>], [\n    [<span class="s">\'description\'</span> => <span class="s">\'Piano Pro, novembre\'</span>, <span class="s">\'amount\'</span> => 49.90],\n]);\n\n$fz->computeInvoice($p);   <span class="c">// totali e numero, nulla creato</span>\n<span class="k">$inv</span> = $fz->createInvoice($p);  <span class="c">// numerata, non inviata</span>\nfile_put_contents(<span class="s">\'fattura.pdf\'</span>, $fz->invoicePdf($inv[<span class="s">\'id\'</span>]));'],
+    ['invoice.php', '<span class="k">$fz</span> = new Fiscozen(<span class="s">\'.session.json\'</span>);\n\n<span class="k">$c</span> = $fz->findCustomer(<span class="s">\'12345678903\'</span>);\n<span class="k">$p</span> = $fz->buildInvoice($c[<span class="s">\'counterpart_version\'</span>], [\n    [<span class="s">\'description\'</span> => <span class="s">\'Piano Pro, novembre\'</span>, <span class="s">\'amount\'</span> => 49.90],\n]);\n\n$fz->computeInvoice($p);   <span class="c">// totali e numero, nulla creato</span>\n<span class="k">$inv</span> = $fz->createInvoice($p);  <span class="c">// numerata, non inviata</span>\nfile_put_contents(<span class="s">\'fattura.pdf\'</span>, $fz->invoicePdf($inv[<span class="s">\'id\'</span>]));'],
     ['claude_desktop_config.json', '{\n  <span class="s">"mcpServers"</span>: {\n    <span class="s">"fiscozen"</span>: {\n      <span class="s">"command"</span>: <span class="s">"php"</span>,\n      <span class="s">"args"</span>: [<span class="s">"/percorso/fiscozen-api/bin/mcp-server.php"</span>]\n    }\n  }\n}\n\n<span class="c"># Claude Code</span>\n<span class="k">claude mcp add</span> fiscozen -- php bin/mcp-server.php\n\n<span class="c"># ChatGPT e API: server HTTP con token</span>\nFISCOZEN_MCP_TOKEN=... <span class="k">php -S</span> 127.0.0.1:8787 public/mcp.php'],
   ];
   const code = $('[data-code]'), file = $('[data-file]'), tabs = $$('[data-step]');
@@ -751,7 +755,7 @@ document.documentElement.classList.add('js');
     $('[data-bollo]').textContent = bollo ? eur(2) : 'non dovuta';
     $('[data-total]').textContent = eur(sub + bollo);
     $('[data-note]').textContent = "Codice NI3 (natura N2.2 in FatturaPA): operazione in franchigia IVA e senza ritenuta d'acconto, Art.1 c.54-89 L.190/2014." + (bollo ? ' Sopra 77,47 € la marca da bollo da 2 € è obbligatoria.' : '');
-    const tax = form.tax.value.trim() || '12345678901';
+    const tax = form.tax.value.trim() || '12345678903';
     out.textContent = fmt === 'php'
       ? `$c = $fz->findCustomer('${tax}');\n$p = $fz->buildInvoice($c['counterpart_version'], [\n` +
         rows.map(r => `    ['description' => '${r.description.replace(/'/g, "\\'")}', 'amount' => ${r.amount}, 'quantity' => ${r.quantity}],`).join('\n') +

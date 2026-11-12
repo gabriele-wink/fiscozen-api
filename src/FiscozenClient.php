@@ -211,7 +211,7 @@ class FiscozenClient
                 return;
             }
             yield from $page['results'];
-            $next = $page['next'] ? preg_replace('#^https?://[^/]+#', '', $page['next']) : null;
+            $next = !empty($page['next']) ? preg_replace('#^https?://[^/]+#', '', $page['next']) : null;
         }
     }
 

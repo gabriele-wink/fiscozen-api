@@ -498,6 +498,146 @@ class Fiscozen extends FiscozenClient
 
     // -------------------------------------------------------- notifications
 
+    // ------------------------------------------------------------------ SdI
+
+    /** SdI status of an invoice, normalised with an Italian description (see Sdi::STATUSES). */
+    public function sdiStatus(int $invoiceId): array
+    {
+        $inv = $this->invoice($invoiceId);
+        return ['id' => $inv['id'], 'full_id' => $inv['full_id']] + Sdi::status($inv);
+    }
+
+    /**
+     * Issued invoices that need attention on the SdI side: rejected (scartate), not delivered
+     * (messe a disposizione), refused by a PA, or still to send. Each item has the normalised status.
+     */
+    public function sdiProblems(): array
+    {
+        $out = [];
+        foreach ($this->allInvoices() as $i) {
+            $s = Sdi::status($i);
+            if ($s['needs_action']) {
+                $out[] = ['id' => $i['id'], 'full_id' => $i['full_id'], 'invoice_date' => $i['invoice_date'],
+                    'customer' => $i['counterpart_version_display_name'] ?? null, 'amount' => $i['amount']] + $s
+                    + ($s['state'] === 'rejected' && $s['changed_at'] ? ['resend_by' => Sdi::resendDeadline((string)$s['changed_at'])] : []);
+            }
+        }
+        return $out;
+    }
+
+    /** Count of issued invoices per SdI state. */
+    public function sdiSummary(): array
+    {
+        $count = [];
+        foreach ($this->allInvoices() as $i) {
+            $state = Sdi::status($i)['state'];
+            $count[$state] = ($count[$state] ?? 0) + 1;
+        }
+        return $count;
+    }
+
+    /** Check a customer against SdI delivery rules (recipient code, PEC, CUU, VAT and tax code checksums). */
+    public function checkCustomerForSdi(int $counterpartId): array
+    {
+        return Sdi::checkCustomer($this->counterpart($counterpartId));
+    }
+
+    /**
+     * Pre-flight checks before creating/sending an invoice: customer data, emission deadline, stamp duty.
+     * Purely advisory, nothing is sent. $payload is the output of buildInvoice().
+     */
+    public function checkInvoice(array $payload, ?string $operationDate = null): array
+    {
+        $customer = $this->counterpartByVersion((int)$payload['counterpart_version']);
+        $res = $customer ? Sdi::checkCustomer($customer) : ['ok' => false, 'channel' => null, 'errors' => ['Cliente non trovato'], 'warnings' => []];
+        $date = $payload['invoice_date'] ?? date('Y-m-d');
+        if ($operationDate) {
+            $deadline = Sdi::issueDeadline($operationDate);
+            if ($date > $deadline) {
+                $res['warnings'][] = "Emissione oltre i 12 giorni dall'operazione ($operationDate, termine $deadline): rischio sanzioni";
+            }
+        }
+        if ($date > date('Y-m-d')) {
+            $res['errors'][] = 'Data fattura nel futuro';
+        }
+        $rows = $payload['_data_params']['rows'] ?? [];
+        if (!$rows) {
+            $res['errors'][] = 'Nessuna riga in fattura';
+        }
+        $exempt = 0.0;
+        foreach ($rows as $r) {
+            if ((float)($r['vat_code']['value'] ?? 0) == 0.0) {
+                $exempt += (float)$r['total'];
+            }
+            if (trim((string)($r['description'] ?? '')) === '') {
+                $res['errors'][] = 'Riga senza descrizione';
+            }
+        }
+        if (Sdi::stampDutyDue($exempt)) {
+            $res['warnings'][] = 'Importo esente oltre 77,47 €: è dovuta la marca da bollo da 2 € (Fiscozen la gestisce in automatico)';
+        }
+        $res['ok'] = !$res['errors'];
+        return $res;
+    }
+
+    /**
+     * Export issued invoices (PDF + FatturaPA XML) and credit notes to a folder for archiving,
+     * with a manifest.json carrying SHA-256 hashes. Legal "conservazione a norma" (10 years) still needs
+     * an accredited service (e.g. the free one of the Agenzia delle Entrate): this is a backup copy.
+     */
+    public function archiveInvoices(string $dir, ?int $year = null): array
+    {
+        if (!is_dir($dir) && !mkdir($dir, 0700, true) && !is_dir($dir)) {
+            throw new FiscozenException("Cannot create $dir");
+        }
+        $manifest = [];
+        $save = function (string $name, string $bytes, array $meta) use ($dir, &$manifest) {
+            file_put_contents("$dir/$name", $bytes);
+            $manifest[] = $meta + ['file' => $name, 'sha256' => hash('sha256', $bytes), 'bytes' => strlen($bytes)];
+        };
+        foreach ($this->allInvoices() as $i) {
+            if ($year && (int)substr((string)$i['invoice_date'], 0, 4) !== $year) {
+                continue;
+            }
+            $base = 'fattura_' . str_replace('/', '-', $i['full_id']) . '_' . $i['invoice_date'];
+            $meta = ['type' => 'invoice', 'id' => $i['id'], 'full_id' => $i['full_id'], 'date' => $i['invoice_date'], 'e_status' => $i['e_status'] ?? null];
+            $save("$base.pdf", $this->invoicePdf((int)$i['id']), $meta + ['format' => 'pdf']);
+            if (!empty($i['is_e_invoice']) && !empty($i['can_download_last_sent_xml'])) {
+                $save("$base.xml", $this->invoiceXml((int)$i['id']), $meta + ['format' => 'xml']);
+            }
+        }
+        foreach ($this->allCreditNotes() as $n) {
+            if ($year && (int)substr((string)$n['credit_note_date'], 0, 4) !== $year) {
+                continue;
+            }
+            $base = 'nota_credito_' . str_replace('/', '-', $n['full_id']) . '_' . $n['credit_note_date'];
+            $meta = ['type' => 'credit_note', 'id' => $n['id'], 'full_id' => $n['full_id'], 'date' => $n['credit_note_date']];
+            $save("$base.pdf", $this->creditNotePdf((int)$n['id']), $meta + ['format' => 'pdf']);
+            if (!empty($n['is_e_credit_note'])) {
+                try {
+                    $save("$base.xml", $this->creditNoteXml((int)$n['id']), $meta + ['format' => 'xml']);
+                } catch (FiscozenException) {
+                    // not every credit note has a sent XML
+                }
+            }
+        }
+        file_put_contents("$dir/manifest.json", json_encode(['exported_at' => date('c'), 'year' => $year, 'files' => $manifest],
+            JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+        return ['dir' => $dir, 'files' => count($manifest)];
+    }
+
+    /** E-invoices received from SdI (supplier invoices to you), as listed in the "fatture ricevute" inbox. */
+    public function allReceivedEInvoices(): \Generator
+    {
+        return $this->paginate('/api/v1/sdi_received_documents/', ['page_size' => 100]);
+    }
+
+    /** SdI receipt / notification file of a received document. */
+    public function receivedEInvoiceReceipt(int $receivedDocumentId): string
+    {
+        return $this->download("/esporta/fatture_elettroniche/$receivedDocumentId/", ['receipt' => '']);
+    }
+
     public function allNotifications(): \Generator
     {
         return $this->paginate('/api/v1/notification_queue/', [

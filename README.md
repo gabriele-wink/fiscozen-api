@@ -55,6 +55,13 @@
 - [x] Find a customer by VAT number or *codice fiscale*
 - [x] **Create**, **update** (versioned records) and **delete**
 
+### SdI (Sistema di Interscambio)
+- [x] Normalised SdI status of every invoice: to send, pending, delivered, made available (*messa a disposizione*), rejected (*scartata*), accepted or refused by a PA
+- [x] List of invoices that need action, with the 5-day resend deadline for rejected ones
+- [x] Pre-flight checks against common rejection causes: VAT number and *codice fiscale* checksums, recipient code (7 chars, `0000000`, `XXXXXXX`), PEC, PA CUU, address, 12-day emission deadline, stamp duty over 77,47 €
+- [x] Archive export of PDF and FatturaPA XML with a SHA-256 manifest (a backup copy: legal 10-year *conservazione a norma* still needs an accredited service)
+- [x] E-invoices received from SdI
+
 ### Other data
 - [x] Credit notes: list, detail, PDF and XML
 - [x] Occasional-work receipts (*prestazioni occasionali*) with PDF
@@ -66,7 +73,7 @@
 - [x] Profile, subscriptions, fiscal regime, real-time yearly turnover
 
 ### MCP server (Claude, ChatGPT and any MCP client)
-- [x] 33 tools, plus `send_invoice_to_sdi` when enabled
+- [x] 40 tools, plus `send_invoice_to_sdi` when enabled
 - [x] **stdio** transport (Claude Desktop, Claude Code, Codex CLI, Cursor...)
 - [x] **Streamable HTTP** transport (ChatGPT connectors, OpenAI Responses API, Claude API MCP connector)
 - [x] `search` and `fetch` tools in the shape ChatGPT connectors and deep research expect
@@ -106,8 +113,8 @@ foreach ($fz->allInvoices(Fiscozen::SECTION_TO_COLLECT) as $inv) {
 file_put_contents('invoice.pdf', $fz->invoicePdf($id));
 
 // customer
-$c = $fz->findCustomer('12345678901') ?? $fz->createCustomer([
-    'typology' => 'SOCI', 'business_name' => 'ACME S.R.L.', 'vat' => '12345678901',
+$c = $fz->findCustomer('12345678903') ?? $fz->createCustomer([
+    'typology' => 'SOCI', 'business_name' => 'ACME S.R.L.', 'vat' => '12345678903',
     'address' => 'Via Roma 1', 'municipality' => 'Milano', 'postcode' => '20100', 'province' => 'MI',
     'country' => 'IT', 'recipient_code' => 'ABC1234',
 ]);
@@ -134,6 +141,7 @@ $inv     = $fz->createInvoice($payload);    // numbered, status DA_INCASSARE / e
 | Receipts | `allReceipts()`, `receiptPdf()` |
 | Expenses | `listExpenses()`, `allExpenses()`, `expense()` |
 | Customers / suppliers | `allCustomers()`, `allProviders()`, `counterpart()`, `counterpartByVersion()`, `findCustomer()`, `createCustomer()`, `createProvider()`, `updateCounterpart()`, `deleteCounterpart()`, `counterpartChoices()` |
+| SdI | `sdiStatus()`, `sdiProblems()`, `sdiSummary()`, `checkCustomerForSdi()`, `checkInvoice()`, `archiveInvoices()`, `allReceivedEInvoices()`, `receivedEInvoiceReceipt()`; offline helpers in `Sdi::` (`isValidVat()`, `isValidTaxCode()`, `checkCustomer()`, `issueDeadline()`, `resendDeadline()`, `stampDutyDue()`) |
 | Taxes | `taxPayments()`, `taxForecasts()`, `taxDeclarations()` |
 | Documents | `allDocuments()`, `downloadDocument()` |
 | Notifications | `allNotifications()` |
@@ -170,6 +178,9 @@ $inv     = $fz->createInvoice($payload);    // numbered, status DA_INCASSARE / e
 | `list_expenses`, `list_tax_payments`, `get_tax_forecasts` | read | Expenses and taxes |
 | `list_documents`, `get_document` | read | Document archive |
 | `list_payment_methods`, `list_vat_codes` | read | Lookups for invoicing |
+| `get_sdi_status`, `list_sdi_problems`, `get_sdi_summary` | read | SdI state of issued invoices: rejected, not delivered, PA outcome |
+| `check_customer_for_sdi`, `check_invoice`, `validate_tax_id` | read | Pre-flight checks that prevent SdI rejections |
+| `list_received_einvoices` | read | E-invoices received from SdI |
 | `search`, `fetch` | read | ChatGPT connector and deep research format |
 | `preview_invoice` | read | Server-side computation, nothing created |
 | `create_customer`, `update_customer` | write | Customers |

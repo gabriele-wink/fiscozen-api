@@ -222,6 +222,31 @@ class FiscozenTools
                 throw new \RuntimeException("Document {$a['id']} not found");
             }, self::RO);
 
+        // SdI (Sistema di Interscambio)
+        $s->tool('get_sdi_status', 'SdI status of an issued invoice with its meaning: to send, pending, delivered, made available (not delivered), rejected (scartata), accepted/refused by a PA, plus SdI errors.',
+            self::obj(['id' => self::int('Invoice id')], ['id']),
+            fn(array $a) => $this->authed()->sdiStatus((int)$a['id']), self::RO);
+        $s->tool('list_sdi_problems', 'Issued invoices that need action on the SdI side: rejected (resend within 5 days), not delivered (tell the customer), refused by a PA, or still to send.',
+            self::obj([]), fn() => $this->authed()->sdiProblems(), self::RO);
+        $s->tool('get_sdi_summary', 'Number of issued invoices per SdI state.', self::obj([]),
+            fn() => $this->authed()->sdiSummary(), self::RO);
+        $s->tool('check_customer_for_sdi', 'Check a customer against SdI delivery rules before invoicing: recipient code (7 chars, 0000000 consumers, XXXXXXX foreign), PEC, PA CUU, VAT number and tax code checksums, address.',
+            self::obj(['id' => self::int('Customer id (counterpart)')], ['id']),
+            fn(array $a) => $this->authed()->checkCustomerForSdi((int)$a['id']), self::RO);
+        $s->tool('check_invoice', 'Pre-flight check of an invoice before creating or sending it: customer SdI data, 12-day emission deadline from the operation date, stamp duty. Nothing is created.',
+            self::obj(self::invoiceProps() + ['operation_date' => self::str('Date of the operation/service (YYYY-MM-DD), to check the 12-day emission deadline')], ['rows']),
+            fn(array $a) => $this->authed()->checkInvoice($this->payload($a), $a['operation_date'] ?? null), self::RO);
+        $s->tool('validate_tax_id', 'Validate an Italian VAT number (partita IVA, 11 digits) or tax code (codice fiscale) checksum offline. Wrong numbers are a common cause of SdI rejection.',
+            self::obj(['tax_id' => self::str('VAT number or codice fiscale')], ['tax_id']),
+            function (array $a) {
+                $v = strtoupper(preg_replace('/\s+/', '', (string)$a['tax_id']));
+                $isVat = (bool)preg_match('/^(IT)?\d{11}$/', $v);
+                return ['tax_id' => $v, 'kind' => $isVat ? 'partita_iva' : 'codice_fiscale',
+                    'valid' => $isVat ? \FiscozenApi\Sdi::isValidVat($v) : \FiscozenApi\Sdi::isValidTaxCode($v)];
+            }, ['readOnlyHint' => true, 'openWorldHint' => false]);
+        $s->tool('list_received_einvoices', 'E-invoices received from SdI (supplier invoices addressed to you).', self::obj([]),
+            fn() => iterator_to_array($this->authed()->allReceivedEInvoices(), false), self::RO);
+
         // ChatGPT deep-research / connector compatibility: search + fetch
         $s->tool('search', 'Search Fiscozen invoices, customers and documents. Returns ids usable with fetch.',
             self::obj(['query' => self::str('Free text: customer name, invoice number, VAT, document name')], ['query']),
