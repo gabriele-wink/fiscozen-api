@@ -1,0 +1,5 @@
+.credentials.txt
+.session.json
+vendor/
+fattura_*.pdf
+.taste-skill/

@@ -1,0 +1,12 @@
+{
+    "name": "fiscozen-api/fiscozen-api",
+    "type": "library",
+    "require": {
+        "guzzlehttp/guzzle": "^7.9"
+    },
+    "autoload": {
+        "psr-4": {
+            "FiscozenApi\\": "src/"
+        }
+    }
+}

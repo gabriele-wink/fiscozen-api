@@ -1,0 +1,48 @@
+[
+  {
+    "file": "docs/img/marca-da-bollo.jpg",
+    "media": "image",
+    "ref": "openverse:a446b8ca-cd0a-4c9b-a3ef-a18ac383eecc",
+    "title": "Marca da bollo adesiva",
+    "creator": "Horcrux at Italian Wikipedia",
+    "creatorUrl": "https://en.wikipedia.org/wiki/it:User:Horcrux",
+    "date": null,
+    "license": "CC BY-SA 4.0",
+    "licenseCode": "by-sa",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "creditRequired": true,
+    "page": "https://commons.wikimedia.org/w/index.php?curid=34068067",
+    "via": "Wikimedia Commons",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/4/47/Marca_da_bollo_adesiva.jpg",
+    "width": 1564,
+    "height": 1184,
+    "bytes": 640517,
+    "credit": "\"Marca da bollo adesiva\" by Horcrux at Italian Wikipedia, CC BY-SA 4.0, via Wikimedia Commons",
+    "notes": [
+      "Share-alike: an altered version (recoloured, combined with other pictures) must be shared under the same licence."
+    ],
+    "saved": "2026-11-12T20:23:33.962Z"
+  },
+  {
+    "file": "docs/img/stampa-valori.jpg",
+    "media": "image",
+    "ref": "openverse:149ef33b-7121-4e15-909b-8a8535e8cea4",
+    "title": "Bureau Ptg. & Eng. machines",
+    "creator": "libraryofcongress",
+    "creatorUrl": null,
+    "date": null,
+    "license": "CC0",
+    "licenseCode": "cc0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "creditRequired": false,
+    "page": "https://www.rawpixel.com/image/6998586/photo-image-people-black-vintage",
+    "via": "rawpixel",
+    "image": "https://images.rawpixel.com/editor_1024/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDIyLTA1L2xvYzIwMTY4NTI2NjctaW1hZ2UuanBn.jpg",
+    "width": 1024,
+    "height": 800,
+    "bytes": 260346,
+    "credit": "\"Bureau Ptg. & Eng. machines\" by libraryofcongress, CC0, via rawpixel",
+    "notes": [],
+    "saved": "2026-11-12T20:23:51.215Z"
+  }
+]

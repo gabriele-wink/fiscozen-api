@@ -1,0 +1,861 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>fiscozen-api, client e server MCP non ufficiale</title>
+<meta name="description" content="Progetto open source indipendente, non affiliato a Fiscozen. Client PHP e server MCP per gestire fatture, clienti, scadenze F24 e documenti da codice, da Claude e da ChatGPT.">
+<link rel="preconnect" href="https://api.fontshare.com">
+<link rel="preconnect" href="https://cdn.fontshare.com" crossorigin>
+<link href="https://api.fontshare.com/v2/css?f[]=switzer@400,500,600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #a6b3bc;
+  --surface: #b2bdc5;
+  --ink: #1c1c1c;
+  --muted: #38424a;
+  --accent: #2c3620;
+  --accent-ink: #e3e2da;
+  --field-1: #a6b3bc;
+  --field-2: #b7c8be;
+  --field-3: #d6c4b8;
+  --field-4: #2c3620;
+  --paper: #dcdfdc;
+
+  --step-small: clamp(0.8125rem, 0.79rem + 0.1vw, 0.875rem);
+  --step-body: clamp(1.0625rem, 1rem + 0.25vw, 1.1875rem);
+  --step-lead: clamp(1.25rem, 1.1rem + 0.7vw, 1.625rem);
+  --step-head: clamp(2rem, 1.3rem + 3.2vw, 4rem);
+  --step-display: clamp(4rem, 10vw, 10rem);
+
+  --margin: clamp(16px, 2.4vw, 32px);
+  --gap-section: clamp(96px, 12vw, 180px);
+  --ease: cubic-bezier(.2, .7, .2, 1);
+
+  /* the motif: perforation bites of a marca da bollo, as mask layers */
+  --hole-t: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Ccircle cx='6' cy='0' r='4'/%3E%3C/svg%3E");
+  --hole-b: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Ccircle cx='6' cy='8' r='4'/%3E%3C/svg%3E");
+  --hole-l: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='12'%3E%3Ccircle cx='0' cy='6' r='4'/%3E%3C/svg%3E");
+  --hole-r: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='12'%3E%3Ccircle cx='8' cy='6' r='4'/%3E%3C/svg%3E");
+  --solid: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10'%3E%3Crect width='10' height='10'/%3E%3C/svg%3E");
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font-family: "Switzer", ui-sans-serif, system-ui, sans-serif;
+  font-size: var(--step-body); line-height: 1.5; letter-spacing: -0.005em;
+  font-feature-settings: "tnum" 0;
+  overflow-x: hidden;
+}
+h1, h2, h3 { font-weight: 600; letter-spacing: -0.04em; line-height: 0.95; margin: 0; color: var(--ink); }
+p { margin: 0; }
+a { color: inherit; }
+:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+::selection { background: var(--accent); color: var(--accent-ink); }
+.wrap { padding-inline: var(--margin); }
+.tnum { font-variant-numeric: tabular-nums; }
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* perforated shapes */
+.stamp {
+  -webkit-mask: var(--hole-t) top left / var(--pitch, 12px) calc(var(--pitch, 12px) * .667) repeat-x,
+                var(--hole-b) bottom left / var(--pitch, 12px) calc(var(--pitch, 12px) * .667) repeat-x,
+                var(--hole-l) top left / calc(var(--pitch, 12px) * .667) var(--pitch, 12px) repeat-y,
+                var(--hole-r) top right / calc(var(--pitch, 12px) * .667) var(--pitch, 12px) repeat-y,
+                var(--solid) 0 0 / 100% 100% no-repeat;
+  -webkit-mask-composite: xor;
+          mask: var(--hole-t) top left / var(--pitch, 12px) calc(var(--pitch, 12px) * .667) repeat-x,
+                var(--hole-b) bottom left / var(--pitch, 12px) calc(var(--pitch, 12px) * .667) repeat-x,
+                var(--hole-l) top left / calc(var(--pitch, 12px) * .667) var(--pitch, 12px) repeat-y,
+                var(--hole-r) top right / calc(var(--pitch, 12px) * .667) var(--pitch, 12px) repeat-y,
+                var(--solid) 0 0 / 100% 100% no-repeat;
+          mask-composite: exclude;
+}
+.perf-top {
+  -webkit-mask: var(--hole-t) top left / var(--pitch, 16px) calc(var(--pitch, 16px) * .667) repeat-x,
+                var(--solid) 0 0 / 100% 100% no-repeat;
+  -webkit-mask-composite: xor;
+          mask: var(--hole-t) top left / var(--pitch, 16px) calc(var(--pitch, 16px) * .667) repeat-x,
+                var(--solid) 0 0 / 100% 100% no-repeat;
+          mask-composite: exclude;
+}
+.perf-both {
+  -webkit-mask: var(--hole-t) top left / var(--pitch, 16px) calc(var(--pitch, 16px) * .667) repeat-x,
+                var(--hole-b) bottom left / var(--pitch, 16px) calc(var(--pitch, 16px) * .667) repeat-x,
+                var(--solid) 0 0 / 100% 100% no-repeat;
+  -webkit-mask-composite: xor;
+          mask: var(--hole-t) top left / var(--pitch, 16px) calc(var(--pitch, 16px) * .667) repeat-x,
+                var(--hole-b) bottom left / var(--pitch, 16px) calc(var(--pitch, 16px) * .667) repeat-x,
+                var(--solid) 0 0 / 100% 100% no-repeat;
+          mask-composite: exclude;
+}
+
+/* buttons: little stamps */
+.btn {
+  --pitch: 9px;
+  display: inline-flex; align-items: center; justify-content: center; gap: .5em;
+  min-height: 52px; padding: 0 28px; border: 0; cursor: pointer;
+  background: var(--accent); color: var(--accent-ink);
+  font: 500 var(--step-body)/1 "Switzer", system-ui, sans-serif; letter-spacing: -0.01em;
+  text-decoration: none;
+  transition: transform .18s var(--ease), background-color .18s var(--ease);
+}
+.btn:hover { transform: translateY(-2px); background: #1f2716; }
+.btn:active { transform: translateY(1px) scale(.98); }
+.btn.light { background: var(--paper); color: var(--ink); }
+.btn.light:hover { background: #fff; }
+
+/* ---------------- bar ---------------- */
+.bar {
+  display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
+  padding: 18px var(--margin); font-size: var(--step-small);
+}
+.bar .word { grid-column: 2; font-weight: 600; letter-spacing: -0.02em; font-size: var(--step-lead); text-decoration: none; }
+.bar nav { grid-column: 3; justify-self: end; display: flex; gap: 22px; }
+.bar nav a { text-decoration: none; transition: opacity .15s; }
+.bar nav a:hover { opacity: .6; }
+.bar .left { grid-column: 1; color: var(--muted); }
+
+/* ---------------- hero: stack of stamp sheets ---------------- */
+.hero { position: relative; min-height: 100svh; overflow: clip; }
+main, footer { overflow-x: clip; }
+.hero-copy { text-align: center; padding-top: clamp(40px, 7vh, 90px); position: relative; z-index: 2; }
+.hero h1 { font-size: var(--step-display); }
+.hero .sub { max-width: 46ch; margin: 22px auto 0; font-size: var(--step-lead); line-height: 1.45; }
+.stack { position: absolute; left: 7%; right: 7%; top: 51%; bottom: 0; }
+.sheet {
+  --pitch: 18px;
+  position: absolute; left: 0; right: 0; height: 100%;
+  display: block; text-decoration: none; color: var(--ink);
+  transition: transform .3s var(--ease);
+}
+.sheet:not(.front):hover { transform: translateY(-14px); }
+.sheet .tab { position: absolute; top: 22px; font-size: var(--step-lead); font-weight: 500; }
+.sheet:nth-child(1) { top: 0;     background: var(--field-3); }
+.sheet:nth-child(2) { top: 64px;  background: var(--field-2); }
+.sheet:nth-child(3) { top: 128px; background: var(--surface); }
+.sheet:nth-child(4) { top: 192px; background: var(--paper); }
+.sheet.front { top: 256px; background: var(--accent); color: var(--accent-ink); }
+.sheet:nth-child(1) .tab { left: 32px; }
+.sheet:nth-child(2) .tab { left: 24%; }
+.sheet:nth-child(3) .tab { left: 46%; }
+.sheet:nth-child(4) .tab { left: 68%; }
+.front-inner { display: flex; flex-wrap: wrap; gap: 20px 40px; align-items: flex-start; padding: 40px 32px; }
+.front-inner p { max-width: 52ch; font-size: var(--step-body); color: var(--accent-ink); }
+.front-inner .btn { flex: none; }
+
+/* ---------------- showcase: the SMS code ---------------- */
+.sms {
+  position: relative; overflow: hidden; min-height: 92svh;
+  background: var(--field-3); transition: background-color .4s var(--ease);
+  padding: 72px var(--margin);
+}
+.sms.ok { background: var(--field-2); }
+.sms h2 { font-size: var(--step-head); letter-spacing: -0.03em; max-width: 22ch; }
+.sms .lede { margin-top: 18px; max-width: 46ch; font-size: var(--step-lead); line-height: 1.4; }
+.sms .points { margin-top: 28px; max-width: 46ch; display: grid; gap: 12px; padding: 0; list-style: none; font-size: var(--step-body); }
+.sms .points li { display: grid; grid-template-columns: 16px 1fr; gap: 12px; align-items: start; }
+.dot { --pitch: 5px; width: 16px; height: 16px; background: var(--ink); margin-top: .3em; display: inline-block; }
+.otp {
+  position: absolute; right: -6vw; bottom: -10vh;
+  font-size: clamp(30px, 6.2vw, 112px);
+  display: grid; gap: .35em; justify-items: start;
+}
+.otp label { font-size: .32em; font-weight: 500; letter-spacing: -0.02em; }
+.otp .cells { display: flex; gap: .18em; }
+.otp input {
+  --pitch: 16px;
+  width: 1.45em; height: 1.9em; border: 0; text-align: center;
+  background: var(--paper); color: var(--ink);
+  font: 600 1em/1 "Switzer", system-ui, sans-serif; font-variant-numeric: tabular-nums;
+  caret-color: var(--accent);
+  transition: transform .15s var(--ease), background-color .2s;
+}
+.otp input:focus { outline: none; background: #fff; transform: translateY(-.08em); }
+.otp .state { font-size: .26em; font-weight: 500; min-height: 1.5em; }
+
+/* ---------------- features: use-case bands ---------------- */
+.cases { padding-top: var(--gap-section); }
+.cases-intro { padding: 0 var(--margin) 56px; display: grid; grid-template-columns: 5fr 7fr; gap: 32px 56px; align-items: end; }
+.cases-intro > div { max-width: 52ch; }
+.pic { margin: 0; }
+.pic img { --pitch: 22px; display: block; width: 100%; height: auto; aspect-ratio: 1400 / 1060; object-fit: cover; }
+.pic figcaption, .photo-band figcaption { margin-top: 12px; font-size: var(--step-small); color: var(--muted); }
+.photo-band { margin: var(--gap-section) 0 0; }
+.photo-band img { --pitch: 22px; display: block; width: 100%; height: 72svh; object-fit: cover; object-position: center 40%; filter: grayscale(1) contrast(1.05); }
+.photo-band figcaption { padding: 0 var(--margin); }
+.cases-intro h2 { font-size: var(--step-head); }
+.cases-intro p { margin-top: 18px; }
+.band {
+  display: grid; grid-template-columns: repeat(12, 1fr); gap: 0 16px; align-items: center;
+  min-height: 20vh; padding: 28px var(--margin);
+  background: var(--bg); transition: background-color .35s var(--ease);
+}
+.band .say { grid-column: 1 / span 10; }
+.band .say strong { display: block; font-size: var(--step-head); font-weight: 600; letter-spacing: -0.03em; line-height: 1.1; color: var(--muted); transition: color .3s; }
+.band .then { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .35s var(--ease); }
+.band .then > div { overflow: hidden; }
+.band .then p { padding-top: 10px; font-size: var(--step-body); max-width: 70ch; }
+.band .then code { font-size: inherit; font-family: inherit; font-weight: 500; }
+.band.on .say strong { color: var(--ink); }
+.band.on .then { grid-template-rows: 1fr; }
+.band:nth-of-type(5n+1).on { background: var(--field-2); }
+.band:nth-of-type(5n+2).on { background: var(--field-3); }
+.band:nth-of-type(5n+3).on { background: var(--paper); }
+.band:nth-of-type(5n+4).on { background: var(--surface); }
+.band:nth-of-type(5n+5).on { background: var(--field-2); }
+.switch {
+  grid-column: 11 / span 2; justify-self: end;
+  font-size: var(--step-head);
+  width: 2.1em; height: 1.1em; padding: .1em; border: 0; cursor: pointer;
+  background: var(--muted); border-radius: 999px; position: relative;
+  transition: background-color .25s var(--ease), transform .15s;
+}
+.switch::after {
+  content: ""; position: absolute; top: .1em; left: .1em; width: .9em; height: .9em;
+  background: var(--paper); border-radius: 50%; transition: transform .25s var(--ease);
+}
+.switch[aria-checked="true"] { background: var(--accent); }
+.switch[aria-checked="true"]::after { transform: translateX(1em); }
+.switch:active { transform: scale(.95); }
+
+/* ---------------- how: drag through the stages ---------------- */
+.how > * { min-width: 0; }
+.how { margin-top: var(--gap-section); display: grid; grid-template-columns: 1fr 1fr; min-height: 88svh; position: relative; }
+.how .clause { background: var(--field-2); padding: 72px var(--margin) 160px; }
+.how .clause h2 { font-size: var(--step-head); max-width: 14ch; transition: opacity .2s; }
+.how .clause p { margin-top: 22px; max-width: 44ch; transition: opacity .2s; }
+.how .stage { background: var(--ink); display: grid; place-items: center; padding: 56px 28px 160px; }
+.term {
+  width: min(560px, 100%); background: #111512; color: #dfe4dc; transition: opacity .2s;
+}
+.term .head { display: flex; justify-content: space-between; padding: 12px 16px; font-size: var(--step-small); color: #9aa59a; background: #1a201b; }
+.term pre { margin: 0; padding: 20px 18px 24px; overflow-x: auto; font-size: var(--step-small); line-height: 1.6; }
+.term code { font-family: monospace; }
+.term .c { color: #8c978c; }
+.term .k { color: #c7d7a3; }
+.term .s { color: #e6c6b4; }
+.rail { position: absolute; left: 28px; right: 28px; bottom: 28px; background: var(--bg); padding: 14px 20px 16px; }
+.rail input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 32px; background: transparent; cursor: pointer; }
+.rail input[type=range]::-webkit-slider-runnable-track { height: 8px; background: var(--ink); }
+.rail input[type=range]::-moz-range-track { height: 8px; background: var(--surface); }
+.rail input[type=range]::-moz-range-progress { height: 8px; background: var(--ink); }
+.rail input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 32px; height: 32px; margin-top: -12px; background: var(--accent); border: 0; transition: transform .15s; }
+.rail input[type=range]::-moz-range-thumb { width: 32px; height: 32px; background: var(--accent); border: 0; border-radius: 0; }
+.rail input[type=range]:active::-webkit-slider-thumb { transform: scale(1.15); }
+.rail ol { list-style: none; margin: 10px 0 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); font-size: var(--step-body); color: var(--muted); }
+.rail ol li:nth-child(2) { text-align: center; } .rail ol li:nth-child(3) { text-align: center; } .rail ol li:nth-child(4) { text-align: right; }
+.rail ol li.cur { color: var(--ink); font-weight: 500; }
+.rail ol button { all: unset; cursor: pointer; }
+
+/* the separating band */
+
+
+/* ---------------- list: every function ---------------- */
+.functions { padding: var(--gap-section) var(--margin) 0; display: grid; grid-template-columns: 22% 520px 1fr; gap: 0 48px; }
+.functions .col { grid-column: 2; }
+.functions h2 { font-size: var(--step-lead); font-weight: 500; letter-spacing: -0.02em; line-height: 1.2; margin-bottom: 32px; }
+.functions .intro { grid-column: 2; margin-bottom: 40px; }
+.grp { margin-top: 40px; }
+.grp > span { display: block; color: var(--muted); font-size: var(--step-body); margin-bottom: 6px; }
+.row {
+  display: flex; justify-content: space-between; gap: 16px; align-items: baseline;
+  padding: 8px 0; min-height: 36px; cursor: default;
+  transition: opacity .2s;
+}
+.row .n { display: flex; gap: 8px; align-items: baseline; font-size: var(--step-body); }
+.row .n i { --pitch: 5px; flex: none; width: 16px; height: 16px; align-self: center; background: var(--ink); }
+.row .n i.w { background: var(--accent); }
+.row .n i.x { background: #8a3b2b; }
+.row .v { font-size: var(--step-small); color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.row .n code { font-family: inherit; font-weight: 500; }
+.functions.dim .row { opacity: .4; }
+.functions.dim .row.hot { opacity: 1; }
+.preview { grid-column: 3; position: sticky; top: 90px; align-self: start; }
+.preview .term { width: 100%; max-width: 520px; }
+.preview .term pre { white-space: pre-wrap; }
+.preview .term { transition: opacity .24s var(--ease); }
+
+/* ---------------- faq: filed cards ---------------- */
+.faq { padding: var(--gap-section) var(--margin) 0; display: grid; grid-template-columns: repeat(12, 1fr); }
+.faq h2 { grid-column: 3 / span 8; font-size: var(--step-head); margin-bottom: 40px; }
+.cards { grid-column: 3 / span 8; }
+.card { position: relative; margin-top: -24px; }
+.card:first-child { margin-top: 0; }
+.card .tabk {
+  --pitch: 10px;
+  display: inline-block; height: 40px; width: 200px; padding: 10px 18px; font-size: var(--step-body); font-weight: 500;
+  margin-left: calc(var(--i) * 150px);
+}
+.card .body { padding: 18px 28px 28px; }
+.card button { all: unset; display: block; width: 100%; cursor: pointer; font-size: var(--step-lead); font-weight: 500; line-height: 1.3; }
+.card button:focus-visible { outline: 3px solid var(--ink); outline-offset: 4px; }
+.card .ans { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .35s var(--ease); }
+.card .ans > div { overflow: hidden; }
+.card .ans p { padding-top: 12px; max-width: 58ch; font-size: var(--step-body); }
+.card .ans p + p { padding-top: 8px; }
+.card.open .ans { grid-template-rows: 1fr; }
+.card:nth-child(3n+1) .tabk, .card:nth-child(3n+1) .body { background: var(--field-3); }
+.card:nth-child(3n+2) .tabk, .card:nth-child(3n+2) .body { background: var(--field-2); }
+.card:nth-child(3n+3) .tabk, .card:nth-child(3n+3) .body { background: var(--paper); }
+
+/* ---------------- cta: the invoice dialog ---------------- */
+.cta {
+  margin-top: var(--gap-section); background: var(--accent); color: var(--accent-ink);
+  min-height: 90svh; display: grid; grid-template-columns: repeat(12, 1fr); gap: 0 16px;
+  padding: 80px var(--margin) 48px; align-items: center;
+}
+.cta .close { grid-column: 1 / span 5; align-self: end; }
+.cta .close h2 { color: var(--accent-ink); font-size: var(--step-head); line-height: .92; }
+.cta .close p { margin-top: 18px; max-width: 40ch; font-size: var(--step-body); }
+.dialog {
+  grid-column: 7 / span 6; background: var(--paper); color: var(--ink);
+  box-shadow: 0 24px 60px rgba(0,0,0,.35); /* taste-skill-ignore: dialog of the product fragment (data-ui) */
+}
+.dialog .dh { display: flex; justify-content: space-between; align-items: baseline; padding: 18px 22px; background: #fff; font-size: var(--step-body); }
+.dialog .dh strong { font-weight: 600; }
+.dialog .dh span { color: var(--muted); font-size: var(--step-small); }
+.dialog .db { padding: 18px 22px 22px; display: grid; gap: 14px; }
+.fld { display: grid; gap: 6px; font-size: var(--step-small); color: var(--muted); }
+.fld input { /* taste-skill-ignore: form field */ font: 400 var(--step-body)/1.3 "Switzer", system-ui, sans-serif; color: var(--ink); background: #fff; border: 1px solid #c9c8bf; padding: 11px 12px; }
+.fld input:focus { outline: 2px solid var(--accent); outline-offset: 0; border-color: var(--accent); }
+.lines { display: grid; gap: 8px; }
+.line { display: grid; grid-template-columns: 1fr 110px 64px 36px; gap: 8px; }
+.line input { /* taste-skill-ignore: form field */ font: 400 var(--step-body)/1.3 "Switzer", system-ui, sans-serif; background: #fff; border: 1px solid #c9c8bf; padding: 10px; min-width: 0; color: var(--ink); }
+.line input.num { text-align: right; font-variant-numeric: tabular-nums; }
+.line button { /* taste-skill-ignore: form field */ border: 1px solid #c9c8bf; background: #fff; cursor: pointer; font-size: var(--step-lead); color: var(--muted); }
+.line button:hover { color: var(--ink); }
+.add { justify-self: start; border: 0; background: none; padding: 4px 0; cursor: pointer; font: 500 var(--step-body)/1 "Switzer", system-ui, sans-serif; color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+.totals { display: grid; gap: 4px; font-size: var(--step-small); padding: 12px 14px; background: #fff; }
+.totals div { display: flex; justify-content: space-between; gap: 12px; }
+.totals .grand { font-size: var(--step-lead); font-weight: 600; padding-top: 6px; }
+.totals .note { color: var(--muted); font-size: var(--step-small); line-height: 1.4; display: block; }
+.seg { /* taste-skill-ignore: form control */ display: inline-flex; background: #fff; border: 1px solid #c9c8bf; justify-self: start; }
+.seg button { border: 0; background: none; padding: 9px 16px; cursor: pointer; font: 500 var(--step-body)/1 "Switzer", system-ui, sans-serif; color: var(--muted); }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+.out { background: #111512; color: #dfe4dc; max-height: 220px; overflow: auto; }
+.out pre { margin: 0; padding: 14px 16px; font-size: var(--step-small); line-height: 1.55; white-space: pre; }
+.out code { font-family: monospace; }
+.dialog .actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.dialog .actions .btn { flex: 1; min-width: 180px; }
+.dialog .actions .btn.light { background: #fff; }
+.dialog .actions .btn.light:hover { background: var(--field-2); }
+
+/* ---------------- footer: the stamp sheet, built large ---------------- */
+footer { background: var(--bg); padding: 72px var(--margin) 32px; }
+.mark { display: flex; gap: 4px; align-items: flex-end; height: 34svh; min-height: 200px; }
+.mark span {
+  --pitch: 14px;
+  flex: 1; display: grid; place-items: end center; padding-bottom: .12em;
+  font-weight: 600; font-size: clamp(28px, 6.4vw, 104px); letter-spacing: -0.04em; line-height: 1; color: var(--bg);
+}
+.mark span:nth-child(4n+1) { background: var(--accent); height: 100%; }
+.mark span:nth-child(4n+2) { background: var(--ink); height: 82%; }
+.mark span:nth-child(4n+3) { background: var(--muted); height: 92%; }
+.mark span:nth-child(4n+4) { background: var(--accent); height: 70%; }
+.foot { margin-top: 56px; display: grid; grid-template-columns: repeat(12, 1fr); gap: 32px 16px; font-size: var(--step-small); }
+.foot .links { grid-column: 1 / span 8; display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.foot .links div { display: grid; gap: 8px; align-content: start; }
+.foot .links b { font-weight: 500; }
+.foot .links a { text-decoration: none; color: var(--muted); }
+.foot .links a:hover { color: var(--ink); }
+.foot .legal { grid-column: 9 / span 4; color: var(--ink); line-height: 1.45; }
+.foot .legal + .legal { grid-column: 9 / span 4; }
+.last { margin-top: 48px; display: flex; justify-content: space-between; align-items: center; gap: 16px; font-size: var(--step-small); color: var(--muted); }
+.last .btn { min-height: 44px; padding: 0 20px; font-size: var(--step-small); }
+
+/* entrances: only when JS runs */
+.js .rise { opacity: 0; transform: translateY(24px); transition: opacity .7s var(--ease), transform .7s var(--ease); transition-delay: calc(var(--d, 0) * 75ms); }
+.js .rise.in { opacity: 1; transform: none; }
+.js .hero .sheet { transform: translateY(60px); opacity: 0; transition: transform .8s var(--ease), opacity .8s var(--ease); transition-delay: calc(var(--d, 0) * 90ms + 200ms); }
+.js .hero.in .sheet { transform: none; opacity: 1; }
+.js .hero.in .sheet:not(.front):hover { transform: translateY(-14px); }
+.drift { animation: drift 9s var(--ease) infinite alternate; }
+@keyframes drift { from { transform: translate(0, 0); } to { transform: translate(-1.2vw, -1.4vh); } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: .01ms !important; animation: none !important; scroll-behavior: auto !important; }
+  .js .rise, .js .hero .sheet { opacity: 1; transform: none; }
+}
+
+@media (max-width: 1100px) {
+  .cta { grid-template-columns: 1fr; gap: 48px; }
+  .cta .close, .dialog { grid-column: 1; }
+  .dialog { max-width: 620px; }
+  .functions { grid-template-columns: 1fr 1fr; }
+  .functions .col, .functions .intro { grid-column: 1; }
+  .preview { grid-column: 2; }
+}
+
+/* ---------------- phone ---------------- */
+@media (max-width: 760px) {
+  .bar { grid-template-columns: auto 1fr; }
+  .bar .left { display: none; }
+  .bar .word { grid-column: 1; }
+  .bar nav { grid-column: 2; gap: 16px; }
+  .bar nav a:not(:last-child) { display: none; }
+  .hero h1 { font-size: 15vw; }
+  .hero .sub { font-size: var(--step-body); padding-inline: var(--margin); }
+  .stack { left: 0; right: 0; top: 48svh; }
+  .sheet:nth-child(2) { top: 52px; } .sheet:nth-child(3) { top: 104px; } .sheet:nth-child(4) { top: 156px; } .sheet.front { top: 208px; }
+  .sheet .tab { font-size: var(--step-small); top: 16px; }
+  .sheet:nth-child(1) .tab { left: 16px; } .sheet:nth-child(2) .tab { left: 38%; } .sheet:nth-child(3) .tab { left: auto; right: 16px; } .sheet:nth-child(4) .tab { left: 16px; }
+  .front-inner { padding: 28px 16px; }
+  .front-inner .btn { width: 100%; }
+  .sms { min-height: 86svh; padding-top: 56px; }
+  .sms h2 { font-size: 26px; }
+  .sms .lede, .sms .points { font-size: var(--step-body); }
+  .otp { position: relative; left: auto; right: auto; bottom: auto; margin-top: 40px; font-size: 10.5vw; }
+  .otp label { font-size: 16px; }
+  .otp .state { font-size: 15px; }
+  .band { grid-template-columns: 1fr auto; min-height: 132px; padding: 22px var(--margin); }
+  .band .say { grid-column: 1; }
+  .band .say strong { font-size: 6.4vw; }
+  .band .then p { font-size: var(--step-small); }
+  .switch { grid-column: 2; font-size: 28px; }
+  .how { grid-template-columns: 1fr; }
+  .how .stage { order: -1; min-height: 46svh; padding: 32px 16px 120px; }
+  .how .clause { padding: 40px var(--margin) 56px; }
+  .how .clause h2 { font-size: 9vw; }
+  .rail { position: static; padding: 16px var(--margin) 18px; }
+  .rail ol { grid-template-columns: 1fr 1fr; gap: 4px 0; font-size: var(--step-small); }
+  .rail ol li:nth-child(n) { text-align: left; }
+  .functions { grid-template-columns: 1fr; }
+  .functions .col, .functions .intro { grid-column: 1; }
+  .preview { display: none; }
+  .row { min-height: 44px; }
+  .row .n { min-width: 0; }
+  .cases-intro { grid-template-columns: 1fr; }
+  .photo-band img { height: 46svh; }
+  .faq { grid-template-columns: 1fr; }
+  .faq h2, .cards { grid-column: 1; }
+  .faq h2 { font-size: 9vw; }
+  .card .tabk { width: 120px; margin-left: calc(var(--i) * 40px); padding: 10px 12px; }
+  .card .body { padding: 16px 20px 22px; }
+  .card .ans p { font-size: var(--step-body); }
+  .cta { grid-template-columns: 1fr; padding-top: 56px; gap: 40px; }
+  .cta .close, .dialog { grid-column: 1; }
+  .cta .close { align-self: start; }
+  .cta .close h2 { font-size: 13vw; }
+  .line { grid-template-columns: 1fr 64px 44px; }
+  .line input:first-child { grid-column: 1 / -1; }
+  .dialog .actions .btn { width: 100%; }
+  .foot { grid-template-columns: 1fr; }
+  .foot .links { grid-column: 1; grid-template-columns: 1fr 1fr; }
+  .foot .legal { grid-column: 1; }
+  .mark { height: 22svh; min-height: 120px; }
+  .mark span { font-size: 8vw; }
+}
+</style>
+</head>
+<body>
+
+<header class="bar">
+  <span class="left">Non affiliato a Fiscozen S.p.A.</span>
+  <a class="word" href="#top">fiscozen-api</a>
+  <nav aria-label="Principale">
+    <a href="#casi">Casi d'uso</a>
+    <a href="#come">Come si usa</a>
+    <a href="#funzioni">Funzioni</a>
+    <a href="https://github.com/gabriele-wink/fiscozen-api">GitHub</a>
+  </nav>
+</header>
+
+<main id="top">
+
+<section class="hero" aria-labelledby="h-hero">
+  <div class="hero-copy">
+    <h1 id="h-hero">fiscozen-api</h1>
+    <p class="sub">Client PHP e server MCP per fatture, clienti e scadenze F24, da codice e da Claude o ChatGPT. Progetto non ufficiale, non affiliato a Fiscozen S.p.A.</p>
+  </div>
+  <div class="stack">
+    <a class="sheet perf-top" href="#sms" style="--d:0"><span class="tab">Codice SMS</span></a>
+    <a class="sheet perf-top" href="#casi" style="--d:1"><span class="tab">Casi d'uso</span></a>
+    <a class="sheet perf-top" href="#come" style="--d:2"><span class="tab">Come si usa</span></a>
+    <a class="sheet perf-top" href="#funzioni" style="--d:3"><span class="tab">Funzioni</span></a>
+    <div class="sheet front perf-top" style="--d:4">
+      <div class="front-inner">
+        <a class="btn light stamp" href="https://github.com/gabriele-wink/fiscozen-api">Apri il repository</a>
+        <p>Non è un prodotto Fiscozen. Ti serve un tuo account Fiscozen attivo e le tue credenziali, che restano sul tuo computer o sul tuo server.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sms" id="sms" aria-labelledby="h-sms">
+  <h2 id="h-sms" class="rise">Ogni accesso chiede il tuo <span data-word>SMS</span></h2>
+  <p class="lede rise" style="--d:1">L'account Fiscozen ha la verifica in due passaggi. fiscozen-api non la aggira e non la disattiva: quando la sessione scade serve di nuovo il codice che arriva sul tuo telefono.</p>
+  <ul class="points rise" style="--d:2">
+    <li><i class="dot stamp" aria-hidden="true"></i><span>Dopo il codice, alla domanda "ricordare questo dispositivo?" il client risponde no. Non registra dispositivi fidati sul tuo account.</span></li>
+    <li><i class="dot stamp" aria-hidden="true"></i><span>La sessione è salvata in <code>.session.json</code> con permessi 0600 e vale finché Fiscozen non la fa scadere.</span></li>
+    <li><i class="dot stamp" aria-hidden="true"></i><span>Una fatturazione automatica non presidiata si ferma alla scadenza: qualcuno deve inserire il nuovo codice.</span></li>
+    <li><i class="dot stamp" aria-hidden="true"></i><span>Dal server MCP l'assistente chiama <code>login_start</code>, ti chiede il codice e lo conferma con <code>login_verify</code>.</span></li>
+  </ul>
+  <div class="otp drift" data-ui>
+    <label for="otp-0">Codice ricevuto via SMS</label>
+    <div class="cells" role="group" aria-label="Codice SMS di prova, sei cifre">
+      <input id="otp-0" class="stamp" inputmode="numeric" maxlength="1" aria-label="Cifra 1" value="4">
+      <input class="stamp" inputmode="numeric" maxlength="1" aria-label="Cifra 2" value="6">
+      <input class="stamp" inputmode="numeric" maxlength="1" aria-label="Cifra 3" value="5">
+      <input class="stamp" inputmode="numeric" maxlength="1" aria-label="Cifra 4">
+      <input class="stamp" inputmode="numeric" maxlength="1" aria-label="Cifra 5">
+      <input class="stamp" inputmode="numeric" maxlength="1" aria-label="Cifra 6">
+    </div>
+    <p class="state" aria-live="polite">Prova: completa le sei cifre</p>
+  </div>
+</section>
+
+<section class="cases" id="casi" aria-labelledby="h-casi">
+  <div class="cases-intro">
+    <div>
+      <h2 id="h-casi" class="rise">A cosa serve</h2>
+      <p class="rise" style="--d:1">Accendi un caso d'uso per vedere cosa fa davvero e con quale chiamata. Dalla fattura da 2 € di bollo all'archivio di fine anno, tutto passa dalle stesse API che usa la web app.</p>
+    </div>
+    <figure class="pic rise" style="--d:2">
+      <img class="stamp" src="img/marca-da-bollo.jpg" width="1400" height="1060" alt="Una marca da bollo adesiva da 2 euro dell'Agenzia delle Entrate, staccata dal rotolo" loading="lazy">
+      <figcaption>La marca da bollo da 2 €, obbligatoria sulle fatture forfettarie oltre 77,47 €.</figcaption>
+    </figure>
+  </div>
+  <div class="band on">
+    <div class="say"><strong>Fattura in automatico i tuoi abbonati SaaS.</strong>
+      <div class="then"><div><p>Alla fine del mese il tuo backend chiama <code>findCustomer()</code>, <code>createCustomer()</code> se manca, poi <code>createInvoice()</code>: la fattura prende il numero successivo, per esempio 6/2026, e resta da inviare finché non chiami <code>sendInvoiceToSdi()</code>, cioè quando lo decidi tu.</p></div></div>
+    </div>
+    <button class="switch" role="switch" aria-checked="true" aria-label="Fatturazione SaaS"></button>
+  </div>
+  <div class="band on">
+    <div class="say"><strong>Chiedi a Claude o ChatGPT come va l'anno.</strong>
+      <div class="then"><div><p>"Quanto ho fatturato e cosa devo ancora incassare?" L'assistente usa <code>get_year_stats</code> e <code>list_invoices</code> con la sezione DA_INCASSARE e risponde con le tue cifre, confrontate con il tetto di 85.000 € del forfettario.</p></div></div>
+    </div>
+    <button class="switch" role="switch" aria-checked="true" aria-label="Assistente AI"></button>
+  </div>
+  <div class="band">
+    <div class="say"><strong>Ricevi le scadenze F24 prima che arrivino.</strong>
+      <div class="then"><div><p>Un cron giornaliero legge <code>taxPayments()</code> e <code>taxForecasts()</code> e ti scrive su Slack o per email le scadenze dei prossimi 30 giorni, con importo e descrizione.</p></div></div>
+    </div>
+    <button class="switch" role="switch" aria-checked="false" aria-label="Scadenze F24"></button>
+  </div>
+  <div class="band">
+    <div class="say"><strong>Archivia ogni PDF e XML dove vuoi tu.</strong>
+      <div class="then"><div><p><code>invoicePdf()</code>, <code>invoiceXml()</code>, <code>creditNotePdf()</code> e <code>downloadDocument()</code> scaricano fatture, FatturaPA, note di credito, dichiarazioni e ricevute F24 per il tuo Drive, S3 o il gestionale.</p></div></div>
+    </div>
+    <button class="switch" role="switch" aria-checked="false" aria-label="Archivio documenti"></button>
+  </div>
+  <div class="band">
+    <div class="say"><strong>Segna incassate le fatture appena pagate.</strong>
+      <div class="then"><div><p>Quando Stripe o la banca ti notificano un pagamento, <code>markInvoicePaid($id, '2026-11-30')</code> la sposta da DA_INCASSARE ad archivio, con data e metodo di incasso.</p></div></div>
+    </div>
+    <button class="switch" role="switch" aria-checked="false" aria-label="Riconciliazione incassi"></button>
+  </div>
+  <div class="band">
+    <div class="say"><strong>Esporta spese e clienti per il tuo report.</strong>
+      <div class="then"><div><p><code>allExpenses('2026-01-01', '2026-12-31')</code>, <code>allCustomers()</code> e <code>allInvoices()</code> restituiscono tutto, pagina dopo pagina, pronto per un foglio di calcolo o una dashboard.</p></div></div>
+    </div>
+    <button class="switch" role="switch" aria-checked="false" aria-label="Export report"></button>
+  </div>
+</section>
+
+<section class="how" id="come" aria-labelledby="h-come">
+  <div class="clause">
+    <h2 id="h-come" data-clause>Installa il client</h2>
+    <p data-clause-text>Serve PHP 8.1 o più recente e Composer. L'unica dipendenza è Guzzle.</p>
+  </div>
+  <div class="stage">
+    <div class="term" data-ui data-term>
+      <div class="head"><span data-term-title>terminale</span><span>fiscozen-api</span></div>
+      <pre><code data-term-code></code></pre>
+    </div>
+  </div>
+  <div class="rail">
+    <label class="visually-hidden" for="stage">Passaggio</label>
+    <input id="stage" type="range" min="0" max="3" step="1" value="0">
+    <ol>
+      <li class="cur"><button data-go="0">Installa</button></li>
+      <li><button data-go="1">Accedi con SMS</button></li>
+      <li><button data-go="2">Usa da PHP</button></li>
+      <li><button data-go="3">Collega l'AI</button></li>
+    </ol>
+  </div>
+</section>
+
+<figure class="photo-band">
+  <img class="perf-both" src="img/stampa-valori.jpg" width="1024" height="800" alt="Sala di stampa dei valori bollati negli anni venti: file di operaie alle macchine" loading="lazy">
+  <figcaption>Valori bollati stampati a mano, un secolo fa. Oggi la fattura parte con una chiamata API.</figcaption>
+</figure>
+
+<section class="functions" id="funzioni" aria-labelledby="h-fun">
+  <div class="col">
+    <h2 id="h-fun">Tutte le funzioni</h2>
+    <p class="intro">Ogni riga esiste sia come metodo PHP sia come tool MCP. Passa sopra una riga per vedere la chiamata.</p>
+    <div data-list></div>
+  </div>
+  <aside class="preview" aria-hidden="true">
+    <div class="term" data-ui>
+      <div class="head"><span data-pv-title>tool MCP</span><span data-pv-kind></span></div>
+      <pre><code data-pv-code></code></pre>
+    </div>
+  </aside>
+</section>
+
+<section class="faq" id="domande" aria-labelledby="h-faq">
+  <h2 id="h-faq">Domande oneste</h2>
+  <div class="cards">
+    <div class="card open" style="--i:0">
+      <span class="tabk perf-top">Ufficiale?</span>
+      <div class="body">
+        <button aria-expanded="true">È un servizio di Fiscozen?</button>
+        <div class="ans"><div>
+          <p>No. È un progetto open source indipendente, non affiliato a Fiscozen S.p.A. e non approvato da Fiscozen. Il nome serve solo a dire con quale servizio funziona.</p>
+          <p>Usa le stesse API private che usa la web app. Se Fiscozen le cambia, il client può smettere di funzionare senza preavviso. Prima di usarlo verifica che le condizioni del tuo contratto lo consentano.</p>
+        </div></div>
+      </div>
+    </div>
+    <div class="card" style="--i:1">
+      <span class="tabk perf-top">SMS</span>
+      <div class="body">
+        <button aria-expanded="false">Devo inserire il codice ogni volta?</button>
+        <div class="ans"><div>
+          <p>Solo quando la sessione scade. Il codice arriva via SMS al numero del tuo account; il client lo invia una volta e salva la sessione. Non registra il dispositivo come fidato, quindi alla scadenza successiva servirà un nuovo SMS.</p>
+        </div></div>
+      </div>
+    </div>
+    <div class="card" style="--i:2">
+      <span class="tabk perf-top">Dati</span>
+      <div class="body">
+        <button aria-expanded="false">Dove finiscono password e dati?</button>
+        <div class="ans"><div>
+          <p>Da nessuna parte oltre a Fiscozen. Credenziali e sessione restano in file sul tuo computer o server, esclusi da git. Non c'è un servizio intermedio: il client parla direttamente con app.fiscozen.it.</p>
+        </div></div>
+      </div>
+    </div>
+    <div class="card" style="--i:3">
+      <span class="tabk perf-top">SDI</span>
+      <div class="body">
+        <button aria-expanded="false">Può inviare fatture allo SDI da solo?</button>
+        <div class="ans"><div>
+          <p>Solo se lo abiliti. Creare una fattura non la invia. Nel server MCP l'invio compare solo con <code>FISCOZEN_MCP_ALLOW_SDI=1</code> e richiede <code>confirm: true</code>. Una fattura accettata dallo SDI si corregge solo con una nota di credito.</p>
+        </div></div>
+      </div>
+    </div>
+    <div class="card" style="--i:4">
+      <span class="tabk perf-top">Assistenti</span>
+      <div class="body">
+        <button aria-expanded="false">Con quali AI funziona?</button>
+        <div class="ans"><div>
+          <p>Con ogni client MCP. In locale via stdio: Claude Desktop, Claude Code, Codex CLI, Cursor. In remoto via HTTP con token: ChatGPT, l'API Responses di OpenAI e il connettore MCP dell'API di Claude.</p>
+          <p>I connettori aggiunti dall'interfaccia di ChatGPT e claude.ai non possono inviare header: per loro c'è il token nell'URL, da attivare a parte.</p>
+        </div></div>
+      </div>
+    </div>
+    <div class="card" style="--i:5">
+      <span class="tabk perf-top">Testato</span>
+      <div class="body">
+        <button aria-expanded="false">Cosa è stato provato davvero?</button>
+        <div class="ans"><div>
+          <p>Tutti i metodi di lettura e i download, creazione, modifica ed eliminazione di clienti e fatture, e il server MCP su entrambi i trasporti. Non sono stati provati dal vivo l'invio allo SDI, il segna-come-incassata e l'anteprima XML.</p>
+        </div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="cta" id="prova" aria-labelledby="h-cta">
+  <div class="close">
+    <h2 id="h-cta" class="rise">Prepara la prima fattura</h2>
+    <p class="rise" style="--d:1">Compila le righe: la pagina calcola totale, marca da bollo e nota del forfettario, poi scrive il codice. Niente parte da qui: è un'anteprima locale.</p>
+  </div>
+  <form class="dialog" data-ui data-invoice onsubmit="return false" aria-label="Anteprima fattura">
+    <div class="dh"><strong>Nuova fattura</strong><span>regime forfettario</span></div>
+    <div class="db">
+      <label class="fld">P.IVA o codice fiscale del cliente
+        <input name="tax" value="12345678901" autocomplete="off">
+      </label>
+      <div class="lines" data-lines></div>
+      <button class="add" type="button" data-add>Aggiungi una riga</button>
+      <div class="totals tnum" aria-live="polite">
+        <div><span>Imponibile</span><span data-t-sub>0,00 €</span></div>
+        <div data-t-bollo-row><span>Marca da bollo</span><span data-t-bollo>0,00 €</span></div>
+        <div class="grand"><span>Totale fattura</span><span data-t-total>0,00 €</span></div>
+        <span class="note" data-t-note></span>
+      </div>
+      <div class="seg" role="group" aria-label="Formato del codice">
+        <button type="button" aria-pressed="true" data-fmt="php">PHP</button>
+        <button type="button" aria-pressed="false" data-fmt="mcp">Tool MCP</button>
+      </div>
+      <div class="out"><pre><code data-out></code></pre></div>
+      <div class="actions">
+        <button class="btn stamp" type="button" data-copy>Copia il codice</button>
+        <a class="btn light stamp" href="https://github.com/gabriele-wink/fiscozen-api">Vai al repository</a>
+      </div>
+    </div>
+  </form>
+</section>
+
+</main>
+
+<footer>
+  <div class="mark" aria-label="fiscozen-api">
+    <span class="stamp" aria-hidden="true">f</span><span class="stamp" aria-hidden="true">i</span><span class="stamp" aria-hidden="true">s</span><span class="stamp" aria-hidden="true">c</span><span class="stamp" aria-hidden="true">o</span><span class="stamp" aria-hidden="true">z</span><span class="stamp" aria-hidden="true">e</span><span class="stamp" aria-hidden="true">n</span><span class="stamp" aria-hidden="true">·</span><span class="stamp" aria-hidden="true">a</span><span class="stamp" aria-hidden="true">p</span><span class="stamp" aria-hidden="true">i</span>
+  </div>
+  <div class="foot">
+    <div class="links">
+      <div><b>Pagina</b><a href="#sms">Codice SMS</a><a href="#casi">Casi d'uso</a><a href="#come">Come si usa</a><a href="#funzioni">Funzioni</a></div>
+      <div><b>Repository</b><a href="https://github.com/gabriele-wink/fiscozen-api">Codice</a><a href="https://github.com/gabriele-wink/fiscozen-api#readme">README</a><a href="https://github.com/gabriele-wink/fiscozen-api/issues">Segnala un problema</a></div>
+      <div><b>MCP</b><a href="https://modelcontextprotocol.io">Model Context Protocol</a><a href="https://github.com/gabriele-wink/fiscozen-api#mcp-server">Configurazione</a></div>
+      <div><b>Riferimenti</b><a href="https://www.fiscozen.it">fiscozen.it, sito ufficiale</a><a href="https://www.fatturapa.gov.it">FatturaPA e SDI</a></div>
+    </div>
+    <p class="legal">Immagini: <a href="https://commons.wikimedia.org/w/index.php?curid=34068067">"Marca da bollo adesiva"</a> di Horcrux (Wikipedia in italiano), <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>, via Wikimedia Commons; <a href="https://www.rawpixel.com/image/6998586/photo-image-people-black-vintage">"Bureau Ptg. &amp; Eng. machines"</a>, Library of Congress, <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC0</a>, via rawpixel.</p>
+    <p class="legal">fiscozen-api è un progetto indipendente e non è affiliato, approvato o supportato da Fiscozen S.p.A. Fiscozen è un marchio dei rispettivi titolari, citato solo per indicare il servizio con cui il software è compatibile. Le fatture create e inviate hanno valore fiscale: controlla sempre ciò che automatizzi.</p>
+  </div>
+  <div class="last"><span>Software fornito così com'è, senza garanzie.</span><a class="btn stamp" href="#top">Torna su</a></div>
+</footer>
+
+<script>
+document.documentElement.classList.add('js');
+(() => {
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+  const eur = n => n.toLocaleString('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+
+  // entrances
+  const hero = $('.hero');
+  requestAnimationFrame(() => hero.classList.add('in'));
+  const io = 'IntersectionObserver' in window ? new IntersectionObserver(es => es.forEach(e => {
+    if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+  }), { threshold: .15 }) : null;
+  $$('.rise, .band, .row, .card').forEach((el, i) => {
+    if (!el.classList.contains('rise')) { el.classList.add('rise'); el.style.setProperty('--d', i % 4); }
+    io ? io.observe(el) : el.classList.add('in');
+  });
+
+  // SMS code
+  const sms = $('.sms'), cells = $$('.otp input'), state = $('.otp .state'), word = $('[data-word]');
+  const checkOtp = () => {
+    const v = cells.map(c => c.value).join('');
+    const ok = /^\d{6}$/.test(v);
+    sms.classList.toggle('ok', ok);
+    word.textContent = ok ? 'codice' : 'SMS';
+    state.textContent = ok ? 'Codice inviato una volta, sessione salvata' : 'Prova: completa le sei cifre';
+  };
+  cells.forEach((c, i) => {
+    c.addEventListener('input', () => { c.value = c.value.replace(/\D/g, '').slice(-1); if (c.value && cells[i + 1]) cells[i + 1].focus(); checkOtp(); });
+    c.addEventListener('keydown', e => { if (e.key === 'Backspace' && !c.value && cells[i - 1]) cells[i - 1].focus(); });
+  });
+
+  // use-case switches
+  $$('.band').forEach(b => {
+    const s = $('.switch', b);
+    s.addEventListener('click', () => { const on = s.getAttribute('aria-checked') !== 'true'; s.setAttribute('aria-checked', on); b.classList.toggle('on', on); });
+  });
+
+  // how it works
+  const stages = [
+    { h: 'Installa il client', p: "Serve PHP 8.1 o più recente e Composer. L'unica dipendenza è Guzzle.", t: 'terminale',
+      c: '<span class="k">git clone</span> https://github.com/gabriele-wink/fiscozen-api\n<span class="k">cd</span> fiscozen-api\n<span class="k">composer install</span>\n\n<span class="c"># riga 1 email, riga 2 password (esclusi da git)</span>\nprintf <span class="s">\'%s\\n%s\\n\'</span> <span class="s">\'tu@esempio.it\'</span> <span class="s">\'password\'</span> > .credentials.txt\nchmod 600 .credentials.txt' },
+    { h: 'Accedi con il codice SMS', p: 'Il primo comando invia il codice al telefono del tuo account, il secondo lo conferma e salva la sessione.', t: 'terminale',
+      c: '<span class="k">php</span> bin/login.php\n<span class="c">MFA richiesta (sms): SMS inviato.</span>\n\n<span class="k">php</span> bin/login.php 123456\n<span class="c">OK: autenticato, sessione salvata in .session.json</span>' },
+    { h: 'Usalo dal tuo codice', p: 'Anteprima calcolata dal server, poi creazione. La fattura resta da inviare finché non lo decidi tu.', t: 'invoice.php',
+      c: '<span class="k">$fz</span> = new Fiscozen(<span class="s">\'.session.json\'</span>);\n<span class="k">$c</span> = $fz->findCustomer(<span class="s">\'12345678901\'</span>);\n<span class="k">$p</span> = $fz->buildInvoice($c[<span class="s">\'counterpart_version\'</span>], [\n  [<span class="s">\'description\'</span> => <span class="s">\'Piano Pro, novembre\'</span>, <span class="s">\'amount\'</span> => 49.90],\n]);\n$fz->computeInvoice($p);  <span class="c">// totali e numero, nulla creato</span>\n$fz->createInvoice($p);   <span class="c">// numerata, non inviata</span>' },
+    { h: "Collega l'assistente", p: 'In locale via stdio, oppure in remoto via HTTP con token per ChatGPT e le API.', t: 'claude_desktop_config.json',
+      c: '{\n  <span class="s">"mcpServers"</span>: {\n    <span class="s">"fiscozen"</span>: {\n      <span class="s">"command"</span>: <span class="s">"php"</span>,\n      <span class="s">"args"</span>: [<span class="s">"/percorso/fiscozen-api/bin/mcp-server.php"</span>]\n    }\n  }\n}\n\n<span class="c"># remoto: FISCOZEN_MCP_TOKEN=... php -S 127.0.0.1:8787 public/mcp.php</span>' },
+  ];
+  const range = $('#stage'), cl = $('[data-clause]'), clt = $('[data-clause-text]'), term = $('[data-term]');
+  const setStage = i => {
+    range.value = i; range.style.setProperty('--pct', (i / 3 * 100) + '%');
+    $$('.rail li').forEach((li, k) => li.classList.toggle('cur', k === i));
+    [cl, clt, term].forEach(el => el.style.opacity = 0);
+    setTimeout(() => {
+      const s = stages[i];
+      cl.textContent = s.h; clt.textContent = s.p;
+      $('[data-term-title]').textContent = s.t; $('[data-term-code]').innerHTML = s.c;
+      [cl, clt, term].forEach(el => el.style.opacity = 1);
+    }, 200);
+  };
+  range.addEventListener('input', () => setStage(+range.value));
+  $$('[data-go]').forEach(b => b.addEventListener('click', () => setStage(+b.dataset.go)));
+  setStage(0);
+
+  // functions list
+  const R = 'lettura', W = 'scrittura', X = 'irreversibile', A = 'accesso';
+  const groups = [
+    ['Accesso', [['login_start', A, 'Invia il codice SMS al tuo telefono', 'login($email, $password)'], ['login_verify', A, 'Conferma il codice e salva la sessione', 'verifyMfa(\'123456\')'], ['auth_status', R, 'La sessione è ancora valida?', 'isAuthenticated()']]],
+    ['Profilo e anno', [['get_profile', R, 'Anagrafica, P.IVA, regime, ATECO', 'me()'], ['get_year_stats', R, 'Fatturato in tempo reale e tetto forfettario', 'yearStats(2026)']]],
+    ['Fatture emesse', [['list_invoices', R, 'Archivio, da incassare, da inviare', 'listInvoices(\'DA_INCASSARE\')'], ['get_invoice', R, 'Righe, totali, stato SDI', 'invoice($id)'], ['get_invoice_pdf', R, 'PDF della fattura', 'invoicePdf($id)'], ['get_invoice_xml', R, 'XML FatturaPA inviato', 'invoiceXml($id)'], ['get_invoice_numbering', R, 'Prossimo numero per anno', 'invoiceNumbering()']]],
+    ['Emissione', [['preview_invoice', R, 'Calcolo del server, nulla creato', 'computeInvoice($payload)'], ['create_invoice', W, 'Crea e numera, non invia', 'createInvoice($payload)'], ['update_invoice', W, 'Modifica una fattura non inviata', 'updateInvoice($id, $payload)'], ['delete_invoice', W, 'Elimina una fattura non inviata', 'deleteInvoice($id)'], ['mark_invoice_paid', W, 'Segna come incassata', 'markInvoicePaid($id, \'2026-11-30\')'], ['send_invoice_to_sdi', X, 'Invio allo SDI, solo se abilitato', 'sendInvoiceToSdi($id)']]],
+    ['Clienti e fornitori', [['list_customers', R, 'Clienti con totali fatturati', 'allCustomers()'], ['find_customer', R, 'Ricerca esatta per P.IVA o CF', 'findCustomer(\'12345678901\')'], ['create_customer', W, 'Nuovo cliente, anche estero', 'createCustomer([...])'], ['update_customer', W, 'Nuova versione dell\'anagrafica', 'updateCounterpart($id, [...])'], ['delete_customer', W, 'Solo se senza fatture', 'deleteCounterpart($id)'], ['list_providers', R, 'Fornitori', 'allProviders()']]],
+    ['Altri documenti', [['list_credit_notes', R, 'Note di credito, PDF e XML', 'allCreditNotes()'], ['list_expenses', R, 'Spese e fatture ricevute', 'allExpenses($da, $a)'], ['list_tax_payments', R, 'Scadenze F24', 'taxPayments()'], ['get_tax_forecasts', R, 'Previsione tasse e contributi', 'taxForecasts()'], ['list_documents', R, 'Dichiarazioni, ricevute, contratti', 'allDocuments()'], ['get_document', R, 'Scarica un documento', 'downloadDocument($doc)']]],
+    ['Per le AI', [['search', R, 'Cerca fatture, clienti, documenti', '—'], ['fetch', R, 'Apre un risultato di search', '—'], ['list_vat_codes', R, 'Codici IVA del tuo regime', 'vatCodes()'], ['list_payment_methods', R, 'Metodi di incasso e IBAN', 'invoicePaymentMethods()']]],
+  ];
+  const list = $('[data-list]'), fn = $('.functions');
+  const pvT = $('[data-pv-title]'), pvK = $('[data-pv-kind]'), pvC = $('[data-pv-code]'), pv = $('.preview .term');
+  const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  groups.forEach(([g, rows]) => {
+    const div = document.createElement('div'); div.className = 'grp';
+    div.innerHTML = `<span>${g}</span>` + rows.map(([t, k, d, php]) =>
+      `<div class="row" tabindex="0" data-t="${t}" data-k="${k}" data-php="${esc(php)}"><span class="n"><i class="stamp ${k === W ? 'w' : k === X ? 'x' : ''}" aria-hidden="true"></i><span><code>${t}</code> ${d}</span></span><span class="v">${k}</span></div>`).join('');
+    list.appendChild(div);
+  });
+  const show = row => {
+    fn.classList.add('dim'); $$('.row').forEach(r => r.classList.toggle('hot', r === row));
+    pv.style.opacity = .2;
+    setTimeout(() => {
+      pvT.textContent = row.dataset.t; pvK.textContent = row.dataset.k;
+      const php = row.dataset.php;
+      pvC.innerHTML = `<span class="c">// tool MCP</span>\n{ <span class="s">"name"</span>: <span class="s">"${row.dataset.t}"</span>, <span class="s">"arguments"</span>: { … } }\n\n<span class="c">// metodo PHP</span>\n${php === '—' ? '<span class="c">solo MCP</span>' : '$fz->' + php + ';'}` + (row.dataset.k === X ? '\n\n<span class="c">// compare solo con FISCOZEN_MCP_ALLOW_SDI=1\n// e richiede confirm: true</span>' : '');
+      pv.style.opacity = 1;
+    }, 120);
+  };
+  $$('.row').forEach(r => { r.addEventListener('mouseenter', () => show(r)); r.addEventListener('focus', () => show(r)); });
+  list.addEventListener('mouseleave', () => { fn.classList.remove('dim'); $$('.row').forEach(r => r.classList.remove('hot')); });
+  show($('.row[data-t="create_invoice"]')); fn.classList.remove('dim');
+
+  // FAQ cards
+  $$('.card button').forEach(b => b.addEventListener('click', () => {
+    $$('.card').forEach(c => { const me = c.contains(b); c.classList.toggle('open', me); $('button', c).setAttribute('aria-expanded', me); });
+  }));
+
+  // live invoice
+  const form = $('[data-invoice]'), lines = $('[data-lines]'), out = $('[data-out]');
+  let fmt = 'php';
+  const addLine = (d = '', a = '', q = 1) => {
+    const el = document.createElement('div'); el.className = 'line';
+    el.innerHTML = `<input aria-label="Descrizione" value="${esc(d)}" placeholder="Descrizione"><input class="num" aria-label="Prezzo unitario in euro" inputmode="decimal" value="${a}" placeholder="0,00"><input class="num" aria-label="Quantità" inputmode="numeric" value="${q}"><button type="button" aria-label="Rimuovi riga">×</button>`;
+    $('button', el).addEventListener('click', () => { if (lines.children.length > 1) { el.remove(); calc(); } });
+    $$('input', el).forEach(i => i.addEventListener('input', calc));
+    lines.appendChild(el);
+  };
+  const num = v => parseFloat(String(v).replace(/\./g, '').replace(',', '.')) || 0;
+  const calc = () => {
+    const rows = $$('.line', lines).map(l => { const [d, a, q] = $$('input', l).map(i => i.value); return { d: d.trim() || 'Servizio', a: num(a), q: Math.max(1, Math.round(num(q)) || 1) }; });
+    const sub = rows.reduce((s, r) => s + r.a * r.q, 0);
+    const bollo = sub > 77.47 ? 2 : 0;
+    $('[data-t-sub]').textContent = eur(sub);
+    $('[data-t-bollo]').textContent = bollo ? eur(2) : 'non dovuta';
+    $('[data-t-total]').textContent = eur(sub + bollo);
+    $('[data-t-note]').textContent = "Nota in fattura (NI3): Regime forfettario, operazione in franchigia IVA e senza ritenuta d'acconto, Art.1 c.54-89 L.190/2014." + (bollo ? ' Sopra 77,47 € la marca da bollo da 2 € è obbligatoria.' : '');
+    const tax = form.tax.value.trim() || '12345678901';
+    const r2 = rows.map(r => ({ description: r.d, amount: +r.a.toFixed(2), quantity: r.q }));
+    if (fmt === 'php') {
+      out.innerHTML = esc(`$c = $fz->findCustomer('${tax}');\n$p = $fz->buildInvoice($c['counterpart_version'], [\n` +
+        r2.map(r => `    ['description' => ${JSON.stringify(r.description).replace(/^"|"$/g, "'")}, 'amount' => ${r.amount}, 'quantity' => ${r.quantity}],`).join('\n') +
+        `\n]);\n$preview = $fz->computeInvoice($p);  // ${eur(sub + bollo)} previsti\n$inv = $fz->createInvoice($p);       // numerata, non inviata`);
+    } else {
+      out.textContent = JSON.stringify({ name: 'create_invoice', arguments: { customer_tax_id: tax, rows: r2 } }, null, 2);
+    }
+  };
+  addLine('Abbonamento piano Pro, novembre 2026', '49,90', 1);
+  addLine('Utenti aggiuntivi', '5,00', 8);
+  $('[data-add]').addEventListener('click', () => { addLine(); calc(); $$('.line input', lines).at(-3).focus(); });
+  form.tax.addEventListener('input', calc);
+  $$('[data-fmt]').forEach(b => b.addEventListener('click', () => { fmt = b.dataset.fmt; $$('[data-fmt]').forEach(x => x.setAttribute('aria-pressed', x === b)); calc(); }));
+  $('[data-copy]').addEventListener('click', async e => {
+    const btn = e.currentTarget;
+    try { await navigator.clipboard.writeText(out.textContent); btn.textContent = 'Copiato'; } catch { btn.textContent = 'Seleziona e copia'; }
+    setTimeout(() => btn.textContent = 'Copia il codice', 1600);
+  });
+  calc();
+})();
+</script>
+</body>
+</html>
