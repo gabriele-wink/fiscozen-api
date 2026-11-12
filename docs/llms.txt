@@ -1,0 +1,28 @@
+# fiscozen-api
+
+> fiscozen-api is an open source (MIT), **unofficial** PHP client and MCP (Model Context Protocol) server for Fiscozen, the Italian VAT/partita IVA accounting service. It lets developers and AI assistants (Claude, ChatGPT, Cursor, Codex) manage invoices, customers, expenses, F24 tax deadlines and documents of their own Fiscozen account. It is **not affiliated with, endorsed by or supported by Fiscozen S.p.A.**
+
+Progetto open source non ufficiale: client PHP e server MCP per Fiscozen (fatture elettroniche, clienti, scadenze F24, documenti) da codice, da Claude e da ChatGPT. Non affiliato a Fiscozen S.p.A.
+
+Key facts:
+- Language: PHP 8.1+, single dependency (Guzzle). License: MIT.
+- Login uses the account's SMS two-factor authentication. The client never bypasses it and never registers a trusted device: a new SMS code is needed every time the session expires.
+- Creating an invoice assigns its number but does NOT send it to SDI. Sending to SDI is a separate, irreversible call, disabled by default in the MCP server (FISCOZEN_MCP_ALLOW_SDI=1 + confirm:true).
+- MCP transports: stdio (Claude Desktop, Claude Code, Codex CLI, Cursor) and Streamable HTTP with bearer token (ChatGPT connectors, OpenAI Responses API, Claude API MCP connector).
+- It uses Fiscozen's private web API, which may change without notice.
+
+## Docs
+- [Landing page (Italian)](https://gabriele-wink.github.io/fiscozen-api/): use cases, how to use it, SMS disclaimer, interactive invoice preview
+- [README](https://github.com/gabriele-wink/fiscozen-api#readme): install, PHP API, MCP configuration for every client, test status
+- [Full documentation for LLMs](https://gabriele-wink.github.io/fiscozen-api/llms-full.txt): every method and MCP tool in one file
+
+## Code
+- [Repository](https://github.com/gabriele-wink/fiscozen-api)
+- [PHP client](https://github.com/gabriele-wink/fiscozen-api/blob/main/src/Fiscozen.php): domain methods (invoices, customers, taxes, documents)
+- [MCP tools](https://github.com/gabriele-wink/fiscozen-api/blob/main/src/Mcp/FiscozenTools.php): tool definitions and schemas
+- [License (MIT)](https://github.com/gabriele-wink/fiscozen-api/blob/main/LICENSE)
+
+## Optional
+- [Model Context Protocol](https://modelcontextprotocol.io)
+- [FatturaPA / SDI](https://www.fatturapa.gov.it)
+- [Fiscozen official website](https://www.fiscozen.it) (the official service; this project is not part of it)

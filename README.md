@@ -26,6 +26,10 @@
 > [!WARNING]
 > This project is **not affiliated with, endorsed by or supported by Fiscozen S.p.A.** It uses the private web API of `app.fiscozen.it`, found by observing the web app, and it may break without notice. The Fiscozen name and logo belong to their owners and appear here only to identify the service. Invoices created and sent to SDI are legally binding: review what you automate.
 
+## In italiano
+
+**fiscozen-api** è un client PHP e un server MCP open source, **non ufficiale**, per usare il tuo account Fiscozen da codice e dagli assistenti AI: crea e scarica **fatture elettroniche** (PDF e XML FatturaPA), gestisci **clienti e fornitori**, leggi **spese**, **scadenze F24** e **documenti**, automatizza la **fatturazione del tuo SaaS** e chiedi a **Claude** o **ChatGPT** come va l'anno. Pensato per freelance e sviluppatori con **partita IVA**, anche in **regime forfettario**. Ogni accesso richiede il codice SMS dell'account. Non affiliato a Fiscozen S.p.A. Landing page: https://gabriele-wink.github.io/fiscozen-api/
+
 ---
 
 ## Features

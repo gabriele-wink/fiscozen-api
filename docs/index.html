@@ -3,8 +3,164 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>fiscozen-api, client e server MCP non ufficiale</title>
-<meta name="description" content="Progetto open source indipendente, non affiliato a Fiscozen S.p.A. Client PHP e server MCP per gestire fatture, clienti, scadenze F24 e documenti da codice, da Claude e da ChatGPT.">
+<title>Fiscozen API e server MCP non ufficiale: fatture da PHP, Claude e ChatGPT | fiscozen-api</title>
+<meta name="description" content="fiscozen-api è un client PHP e server MCP open source (MIT), non ufficiale e non affiliato a Fiscozen S.p.A.: crea fatture elettroniche, gestisci clienti, F24 e documenti da codice, da Claude e da ChatGPT.">
+<meta name="keywords" content="Fiscozen API, API Fiscozen, Fiscozen MCP, server MCP fatturazione, fattura elettronica API PHP, FatturaPA, SDI, partita IVA, regime forfettario, F24, Claude, ChatGPT">
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+<meta name="author" content="fiscozen-api contributors">
+<meta name="theme-color" content="#0d0f12">
+<link rel="canonical" href="https://gabriele-wink.github.io/fiscozen-api/">
+<link rel="alternate" hreflang="it" href="https://gabriele-wink.github.io/fiscozen-api/">
+<link rel="alternate" hreflang="x-default" href="https://gabriele-wink.github.io/fiscozen-api/">
+<link rel="alternate" type="text/plain" title="LLM summary" href="https://gabriele-wink.github.io/fiscozen-api/llms.txt">
+<link rel="sitemap" type="application/xml" href="https://gabriele-wink.github.io/fiscozen-api/sitemap.xml">
+<link rel="icon" href="https://gabriele-wink.github.io/fiscozen-api/favicon.svg" type="image/svg+xml">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="it_IT">
+<meta property="og:site_name" content="fiscozen-api">
+<meta property="og:title" content="fiscozen-api: Fiscozen da codice, Claude e ChatGPT (non ufficiale)">
+<meta property="og:description" content="Client PHP e server MCP open source per fatture, clienti e scadenze F24. Progetto indipendente, non affiliato a Fiscozen S.p.A.">
+<meta property="og:url" content="https://gabriele-wink.github.io/fiscozen-api/">
+<meta property="og:image" content="https://gabriele-wink.github.io/fiscozen-api/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="fiscozen-api, client PHP e server MCP non ufficiale per Fiscozen">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="fiscozen-api: Fiscozen da codice, Claude e ChatGPT (non ufficiale)">
+<meta name="twitter:description" content="Client PHP e server MCP open source per fatture, clienti e scadenze F24. Non affiliato a Fiscozen S.p.A.">
+<meta name="twitter:image" content="https://gabriele-wink.github.io/fiscozen-api/og.png">
+<script type="application/ld+json">
+[
+ {
+  "@context": "https://schema.org",
+  "@type": "SoftwareSourceCode",
+  "name": "fiscozen-api",
+  "alternateName": [
+   "Fiscozen API",
+   "Fiscozen MCP server",
+   "Fiscozen PHP client",
+   "API Fiscozen non ufficiali"
+  ],
+  "description": "Client PHP e server MCP open source e non ufficiale per Fiscozen: crea e scarica fatture elettroniche, gestisce clienti, spese, scadenze F24 e documenti da codice, da Claude e da ChatGPT. Non affiliato a Fiscozen S.p.A.",
+  "url": "https://gabriele-wink.github.io/fiscozen-api/",
+  "codeRepository": "https://github.com/gabriele-wink/fiscozen-api",
+  "programmingLanguage": [
+   "PHP"
+  ],
+  "runtimePlatform": "PHP 8.1+",
+  "license": "https://opensource.org/licenses/MIT",
+  "inLanguage": [
+   "it",
+   "en"
+  ],
+  "keywords": "Fiscozen, Fiscozen API, API Fiscozen, MCP, Model Context Protocol, server MCP, fatturazione elettronica, fattura elettronica API, FatturaPA, SDI, partita IVA, regime forfettario, F24, PHP, Claude, ChatGPT, automazione fatture, SaaS",
+  "isAccessibleForFree": true,
+  "image": "https://gabriele-wink.github.io/fiscozen-api/og.png",
+  "author": {
+   "@type": "Organization",
+   "name": "fiscozen-api contributors",
+   "url": "https://github.com/gabriele-wink/fiscozen-api"
+  }
+ },
+ {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "fiscozen-api",
+  "applicationCategory": "DeveloperApplication",
+  "applicationSubCategory": "Fatturazione elettronica, MCP server",
+  "operatingSystem": "Linux, macOS, Windows",
+  "offers": {
+   "@type": "Offer",
+   "price": "0",
+   "priceCurrency": "EUR"
+  },
+  "featureList": [
+   "Login con verifica SMS (2FA)",
+   "Elenco, dettaglio, PDF e XML FatturaPA delle fatture emesse",
+   "Anteprima, creazione, modifica ed eliminazione fatture",
+   "Invio allo SDI (opzionale, irreversibile)",
+   "Clienti e fornitori: ricerca per P.IVA o codice fiscale, creazione, modifica",
+   "Note di credito, spese, fatture ricevute",
+   "Scadenze F24 e previsioni tasse",
+   "Archivio documenti",
+   "Server MCP stdio e Streamable HTTP per Claude, ChatGPT, Cursor, Codex"
+  ],
+  "url": "https://gabriele-wink.github.io/fiscozen-api/",
+  "downloadUrl": "https://github.com/gabriele-wink/fiscozen-api",
+  "softwareHelp": "https://github.com/gabriele-wink/fiscozen-api#readme",
+  "license": "https://opensource.org/licenses/MIT"
+ },
+ {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+   {
+    "@type": "Question",
+    "name": "È un servizio di Fiscozen?",
+    "acceptedAnswer": {
+     "@type": "Answer",
+     "text": "No. È un progetto open source indipendente, non affiliato a Fiscozen S.p.A. e non approvato da Fiscozen. Il nome indica solo il servizio con cui il software è compatibile. Usa le stesse API private della web app: se Fiscozen le cambia, il client può smettere di funzionare senza preavviso. Prima di usarlo verifica che le condizioni del tuo contratto lo consentano."
+    }
+   },
+   {
+    "@type": "Question",
+    "name": "Devo inserire il codice SMS ogni volta?",
+    "acceptedAnswer": {
+     "@type": "Answer",
+     "text": "Solo quando la sessione scade. Il client invia il codice una volta e salva la sessione; non registra il dispositivo come fidato, quindi alla scadenza successiva servirà un nuovo SMS."
+    }
+   },
+   {
+    "@type": "Question",
+    "name": "Dove finiscono password e dati?",
+    "acceptedAnswer": {
+     "@type": "Answer",
+     "text": "Restano in file sul tuo computer o sul tuo server, esclusi da git. Non c'è un servizio intermedio: il client parla direttamente con app.fiscozen.it."
+    }
+   },
+   {
+    "@type": "Question",
+    "name": "Può inviare fatture allo SDI da solo?",
+    "acceptedAnswer": {
+     "@type": "Answer",
+     "text": "Solo se lo abiliti. Creare una fattura non la invia. Nel server MCP l'invio compare solo con FISCOZEN_MCP_ALLOW_SDI=1 e richiede confirm: true. Una fattura accettata dallo SDI si corregge solo con una nota di credito."
+    }
+   },
+   {
+    "@type": "Question",
+    "name": "Con quali assistenti funziona?",
+    "acceptedAnswer": {
+     "@type": "Answer",
+     "text": "Con ogni client MCP. In locale via stdio: Claude Desktop, Claude Code, Codex CLI, Cursor. In remoto via HTTP con token: ChatGPT, l'API Responses di OpenAI e il connettore MCP dell'API di Claude."
+    }
+   },
+   {
+    "@type": "Question",
+    "name": "Posso usarlo e modificarlo?",
+    "acceptedAnswer": {
+     "@type": "Answer",
+     "text": "Sì, è rilasciato con licenza MIT: puoi usarlo, modificarlo e redistribuirlo anche in progetti commerciali, mantenendo l'avviso di copyright. È fornito senza garanzie."
+    }
+   },
+   {
+    "@type": "Question",
+    "name": "Cosa è stato provato davvero?",
+    "acceptedAnswer": {
+     "@type": "Answer",
+     "text": "Tutti i metodi di lettura e i download, creazione, modifica ed eliminazione di clienti e fatture, e il server MCP su entrambi i trasporti. Non sono stati provati dal vivo l'invio allo SDI, il segna-come-incassata e l'anteprima XML."
+    }
+   }
+  ]
+ },
+ {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "fiscozen-api",
+  "url": "https://gabriele-wink.github.io/fiscozen-api/",
+  "inLanguage": "it"
+ }
+]
+</script>
 <link rel="preconnect" href="https://api.fontshare.com">
 <link rel="preconnect" href="https://cdn.fontshare.com" crossorigin>
 <link href="https://api.fontshare.com/v2/css?f[]=switzer@400,500,600&display=swap" rel="stylesheet">
