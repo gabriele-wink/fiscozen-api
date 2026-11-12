@@ -1,6 +1,8 @@
 {
     "name": "fiscozen-api/fiscozen-api",
+    "description": "Unofficial PHP client and MCP server for Fiscozen (not affiliated with Fiscozen S.p.A.)",
     "type": "library",
+    "license": "MIT",
     "require": {
         "guzzlehttp/guzzle": "^7.9"
     },

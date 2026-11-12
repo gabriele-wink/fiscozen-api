@@ -15,6 +15,7 @@
   <img alt="PHP" src="https://img.shields.io/badge/PHP-8.1%2B-777bb4">
   <img alt="MCP" src="https://img.shields.io/badge/MCP-2025--06--18-black">
   <img alt="Transports" src="https://img.shields.io/badge/transport-stdio%20%7C%20Streamable%20HTTP-2ea44f">
+  <img alt="License: MIT" src="https://img.shields.io/badge/license-MIT-blue">
 </p>
 
 <p align="center"><a href="https://gabriele-wink.github.io/fiscozen-api/"><b>Landing page (italiano)</b></a></p>
@@ -305,3 +306,7 @@ assets/                  logo
 - The HTTP server refuses to start without `FISCOZEN_MCP_TOKEN`. Serve it over HTTPS only.
 - Keep `FISCOZEN_MCP_ALLOW_SDI` off unless you need it. Even when it's on, the tool requires `confirm: true`.
 - Prefer `FISCOZEN_MCP_READONLY=1` for assistants that only need to answer questions.
+
+## License
+
+[MIT](LICENSE). The Fiscozen name and logo are trademarks of their owners and are not covered by the license.
