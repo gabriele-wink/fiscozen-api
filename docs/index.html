@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Fiscozen API e server MCP non ufficiale: fatture da PHP, Claude e ChatGPT | fiscozen-api</title>
-<meta name="description" content="fiscozen-api è un client PHP e server MCP open source (MIT), non ufficiale e non affiliato a Fiscozen S.p.A.: crea fatture elettroniche, gestisci clienti, F24 e documenti da codice, da Claude e da ChatGPT.">
-<meta name="keywords" content="Fiscozen API, API Fiscozen, Fiscozen MCP, server MCP fatturazione, fattura elettronica API PHP, FatturaPA, SDI, partita IVA, regime forfettario, F24, Claude, ChatGPT">
+<title>fiscozen-api: client PHP e server MCP non ufficiali per Fiscozen</title>
+<meta name="description" content="Client PHP e server MCP open source per Fiscozen: crea fatture elettroniche e consulta clienti, documenti e scadenze F24 da codice, Claude e ChatGPT. Progetto non ufficiale e non affiliato.">
+<meta name="keywords" content="Fiscozen API, API Fiscozen, Fiscozen MCP, server MCP fatturazione, fattura elettronica API PHP, FatturaPA, SdI, partita IVA, regime forfettario, F24, Claude, ChatGPT">
 <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
 <meta name="author" content="fiscozen-api contributors">
 <meta name="theme-color" content="#0d0f12">
@@ -41,7 +41,7 @@
    "Fiscozen PHP client",
    "API Fiscozen non ufficiali"
   ],
-  "description": "Client PHP e server MCP open source e non ufficiale per Fiscozen: crea e scarica fatture elettroniche, gestisce clienti, spese, scadenze F24 e documenti da codice, da Claude e da ChatGPT. Non affiliato a Fiscozen S.p.A.",
+  "description": "Client PHP e server MCP open source e non ufficiali per Fiscozen: crea fatture elettroniche e consulta clienti, spese, documenti e scadenze F24 da codice, da Claude e da ChatGPT. Non affiliato a Fiscozen S.p.A.",
   "url": "https://gabriele-wink.github.io/fiscozen-api/",
   "codeRepository": "https://github.com/gabriele-wink/fiscozen-api",
   "programmingLanguage": [
@@ -53,13 +53,23 @@
    "it",
    "en"
   ],
-  "keywords": "Fiscozen, Fiscozen API, API Fiscozen, MCP, Model Context Protocol, server MCP, fatturazione elettronica, fattura elettronica API, FatturaPA, SDI, partita IVA, regime forfettario, F24, PHP, Claude, ChatGPT, automazione fatture, SaaS",
+  "keywords": "Fiscozen, Fiscozen API, API Fiscozen, MCP, Model Context Protocol, server MCP, fatturazione elettronica, fattura elettronica API, FatturaPA, SdI, partita IVA, regime forfettario, F24, PHP, Claude, ChatGPT, automazione fatture, SaaS",
   "isAccessibleForFree": true,
   "image": "https://gabriele-wink.github.io/fiscozen-api/og.png",
   "author": {
    "@type": "Organization",
    "name": "fiscozen-api contributors",
-   "url": "https://github.com/gabriele-wink/fiscozen-api"
+   "url": "https://github.com/gabriele-wink/fiscozen-api",
+   "email": "gabriele@windroses.world",
+   "contactPoint": {
+    "@type": "ContactPoint",
+    "contactType": "technical support",
+    "email": "gabriele@windroses.world",
+    "availableLanguage": [
+     "it",
+     "en"
+    ]
+   }
   }
  },
  {
@@ -78,7 +88,7 @@
    "Login con verifica SMS (2FA)",
    "Elenco, dettaglio, PDF e XML FatturaPA delle fatture emesse",
    "Anteprima, creazione, modifica ed eliminazione fatture",
-   "Invio allo SDI (opzionale, irreversibile)",
+   "Invio allo SdI (opzionale, irreversibile)",
    "Clienti e fornitori: ricerca per P.IVA o codice fiscale, creazione, modifica",
    "Note di credito, spese, fatture ricevute",
    "Scadenze F24 e previsioni tasse",
@@ -115,15 +125,15 @@
     "name": "Dove finiscono password e dati?",
     "acceptedAnswer": {
      "@type": "Answer",
-     "text": "Restano in file sul tuo computer o sul tuo server, esclusi da git. Non c'è un servizio intermedio: il client parla direttamente con app.fiscozen.it."
+     "text": "Credenziali e sessione restano in file sul tuo computer o sul tuo server e servono solo ad autenticarti su Fiscozen; nel repository sono già esclusi da Git, nei tuoi progetti assicurati di fare lo stesso. Non c'è un servizio intermedio. Se usi un assistente AI, verifica quali dati gli vengono trasmessi."
     }
    },
    {
     "@type": "Question",
-    "name": "Può inviare fatture allo SDI da solo?",
+    "name": "Può inviare fatture allo SdI da solo?",
     "acceptedAnswer": {
      "@type": "Answer",
-     "text": "Solo se lo abiliti. Creare una fattura non la invia. Nel server MCP l'invio compare solo con FISCOZEN_MCP_ALLOW_SDI=1 e richiede confirm: true. Una fattura accettata dallo SDI si corregge solo con una nota di credito."
+     "text": "Solo se lo abiliti. Creare una fattura non la invia. Nel server MCP l'invio compare solo con FISCOZEN_MCP_ALLOW_SDI=1 e richiede confirm: true. Una fattura accettata dallo SdI si corregge solo con una nota di credito."
     }
    },
    {
@@ -131,7 +141,7 @@
     "name": "Con quali assistenti funziona?",
     "acceptedAnswer": {
      "@type": "Answer",
-     "text": "Con ogni client MCP. In locale via stdio: Claude Desktop, Claude Code, Codex CLI, Cursor. In remoto via HTTP con token: ChatGPT, l'API Responses di OpenAI e il connettore MCP dell'API di Claude."
+     "text": "Con i client MCP compatibili con i trasporti supportati. In locale via stdio: Claude Desktop, Claude Code, Codex CLI, Cursor. In remoto via HTTP con token: ChatGPT, l'API Responses di OpenAI e il connettore MCP dell'API di Claude."
     }
    },
    {
@@ -144,10 +154,18 @@
    },
    {
     "@type": "Question",
+    "name": "Dove chiedo aiuto?",
+    "acceptedAnswer": {
+     "@type": "Answer",
+     "text": "Scrivi a gabriele@windroses.world per domande, aiuto nella configurazione o segnalazioni. Per i bug puoi anche aprire una issue su GitHub. Non inviare mai password, codici SMS o il file .session.json. Per problemi con il tuo account Fiscozen (accesso, fatture, scarti SdI, abbonamento) contatta direttamente Fiscozen: questo progetto non è il loro supporto."
+    }
+   },
+   {
+    "@type": "Question",
     "name": "Cosa è stato provato davvero?",
     "acceptedAnswer": {
      "@type": "Answer",
-     "text": "Tutti i metodi di lettura e i download, creazione, modifica ed eliminazione di clienti e fatture, e il server MCP su entrambi i trasporti. Non sono stati provati dal vivo l'invio allo SDI, il segna-come-incassata e l'anteprima XML."
+     "text": "Tutti i metodi di lettura e i download, creazione, modifica ed eliminazione di clienti e fatture, e il server MCP su entrambi i trasporti. Non sono stati provati dal vivo l'invio allo SdI, il segna-come-incassata e l'anteprima XML."
     }
    }
   ]
@@ -353,10 +371,19 @@ code { font-family: monospace; font-size: .92em; }
 .faq details p { padding-bottom: 20px; max-width: 62ch; }
 .faq details p + p { margin-top: -8px; }
 
+/* support */
+.support { padding-bottom: var(--gap); }
+.support-box { background: #fff; border-radius: 24px; padding: clamp(28px, 4vw, 56px); display: grid; grid-template-columns: 1fr auto; gap: 32px; align-items: center; }
+.support-box h2 { font-size: var(--head); }
+.support-box p { margin-top: 14px; font-size: var(--lead); line-height: 1.45; max-width: 44ch; }
+.support-actions { display: flex; flex-direction: column; gap: 10px; align-items: stretch; }
+.support-actions .btn { justify-content: center; }
+@media (max-width: 960px) { .support-box { grid-template-columns: 1fr; } .support-actions { flex-direction: row; flex-wrap: wrap; } }
+
 /* footer */
 footer { padding-top: 96px; padding-bottom: 40px; }
 .big { font-size: clamp(3rem, 1rem + 10vw, 11rem); font-weight: 600; letter-spacing: -0.06em; line-height: .85; color: var(--light); }
-.foot { margin-top: 64px; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 32px; font-size: var(--small); }
+.foot { margin-top: 64px; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; gap: 32px; font-size: var(--small); }
 .foot p { color: var(--mid-on-dark); max-width: 52ch; line-height: 1.5; }
 .foot p strong { color: var(--light); font-weight: 500; }
 .foot div { display: grid; gap: 8px; align-content: start; }
@@ -425,6 +452,7 @@ footer { padding-top: 96px; padding-bottom: 40px; }
     <a href="#come">Come si usa</a>
     <a href="#funzioni">Funzioni</a>
     <a href="#sms">SMS</a>
+    <a href="#supporto">Supporto</a>
     <a class="btn" href="https://github.com/gabriele-wink/fiscozen-api">GitHub</a>
   </nav>
 </header>
@@ -468,7 +496,7 @@ footer { padding-top: 96px; padding-bottom: 40px; }
   <div class="in flow-grid">
     <div>
       <h2 id="h-flow" class="rise">Le tue fatture, dove lavori già</h2>
-      <p class="lead rise" style="--d:1">Una libreria PHP per il tuo software e un server MCP per gli assistenti AI. Parlano entrambi direttamente con app.fiscozen.it, senza servizi intermedi.</p>
+      <p class="lead rise" style="--d:1">Una libreria PHP per il tuo software e un server MCP per gli assistenti AI. Il client PHP e il server MCP comunicano direttamente con app.fiscozen.it. Se usi un assistente AI, i dati che restituisce possono essere elaborati anche dal suo fornitore.</p>
     </div>
     <svg class="rise" style="--d:2" viewBox="0 0 560 360" role="img" aria-label="Schema: Claude, ChatGPT e il tuo backend si collegano a fiscozen-api, che parla con il tuo account Fiscozen">
       <g font-family="Switzer, sans-serif" font-size="15">
@@ -497,11 +525,11 @@ footer { padding-top: 96px; padding-bottom: 40px; }
 <section class="in cases" id="casi" aria-labelledby="h-casi">
   <h2 id="h-casi" class="rise">A cosa serve</h2>
   <div class="case-list">
-    <article class="case rise"><svg class="stamp-ico" style="color:var(--accent)" aria-hidden="true"><use href="#stamp"/></svg><div><h3>Fatturazione automatica per il tuo SaaS</h3><p>A fine mese il backend trova o crea il cliente con <code>findCustomer()</code> e <code>createCustomer()</code>, poi crea la fattura numerata con <code>createInvoice()</code>. L'invio allo SDI resta una tua decisione.</p></div></article>
-    <article class="case rise" style="--d:1"><svg class="stamp-ico" style="color:var(--accent)" aria-hidden="true"><use href="#stamp"/></svg><div><h3>Un assistente che conosce i tuoi numeri</h3><p>"Quanto ho fatturato quest'anno e cosa devo incassare?" Claude o ChatGPT rispondono con <code>get_year_stats</code> e <code>list_invoices</code>, confrontando il fatturato con il tetto del forfettario.</p></div></article>
-    <article class="case rise"><svg class="stamp-ico" style="color:var(--accent)" aria-hidden="true"><use href="#stamp"/></svg><div><h3>Scadenze F24 senza sorprese</h3><p>Un job giornaliero legge <code>taxPayments()</code> e <code>taxForecasts()</code> e ti avvisa su Slack o per email delle scadenze dei prossimi 30 giorni.</p></div></article>
-    <article class="case rise" style="--d:1"><svg class="stamp-ico" style="color:var(--accent)" aria-hidden="true"><use href="#stamp"/></svg><div><h3>Archivio di PDF e XML dove vuoi</h3><p><code>invoicePdf()</code>, <code>invoiceXml()</code> e <code>downloadDocument()</code> copiano fatture, FatturaPA, note di credito e dichiarazioni su Drive, S3 o nel gestionale.</p></div></article>
-    <article class="case rise"><svg class="stamp-ico" style="color:var(--accent)" aria-hidden="true"><use href="#stamp"/></svg><div><h3>Incassi riconciliati da soli</h3><p>Quando Stripe o la banca confermano un pagamento, <code>markInvoicePaid()</code> sposta la fattura da "da incassare" all'archivio con data e metodo.</p></div></article>
+    <article class="case rise"><svg class="stamp-ico" style="color:var(--accent)" aria-hidden="true"><use href="#stamp"/></svg><div><h3>Fatturazione automatica per il tuo SaaS</h3><p>A fine mese il backend trova o crea il cliente con <code>findCustomer()</code> e <code>createCustomer()</code>, poi crea la fattura numerata con <code>createInvoice()</code>. L'invio allo SdI resta una tua decisione.</p></div></article>
+    <article class="case rise" style="--d:1"><svg class="stamp-ico" style="color:var(--accent)" aria-hidden="true"><use href="#stamp"/></svg><div><h3>Un assistente che conosce i tuoi numeri</h3><p>"Quanto ho fatturato quest'anno e cosa devo incassare?" Claude o ChatGPT rispondono con <code>get_year_stats</code> e <code>list_invoices</code>, mostrando fatture e incassi dell'anno. La verifica dei requisiti del forfettario richiede anche altri dati.</p></div></article>
+    <article class="case rise"><svg class="stamp-ico" style="color:var(--accent)" aria-hidden="true"><use href="#stamp"/></svg><div><h3>Scadenze F24 senza sorprese</h3><p>Puoi programmare un'attività giornaliera che legge <code>taxPayments()</code> e <code>taxForecasts()</code> e ti avvisa su Slack o via email delle scadenze dei prossimi 30 giorni.</p></div></article>
+    <article class="case rise" style="--d:1"><svg class="stamp-ico" style="color:var(--accent)" aria-hidden="true"><use href="#stamp"/></svg><div><h3>Archivio di PDF e XML dove vuoi</h3><p><code>invoicePdf()</code>, <code>invoiceXml()</code> e <code>downloadDocument()</code> scaricano PDF, XML in formato FatturaPA e altri documenti, che puoi poi archiviare su Drive, S3 o nel gestionale.</p></div></article>
+    <article class="case rise"><svg class="stamp-ico" style="color:var(--accent)" aria-hidden="true"><use href="#stamp"/></svg><div><h3>Incassi aggiornati dal tuo software</h3><p>Quando Stripe o la banca confermano un pagamento, <code>markInvoicePaid()</code> sposta la fattura da "da incassare" all'archivio con data e metodo.</p></div></article>
     <article class="case rise" style="--d:1"><svg class="stamp-ico" style="color:var(--accent)" aria-hidden="true"><use href="#stamp"/></svg><div><h3>Report e dashboard su misura</h3><p><code>allInvoices()</code>, <code>allExpenses()</code> e <code>allCustomers()</code> restituiscono tutto, pagina dopo pagina, pronto per un foglio di calcolo.</p></div></article>
   </div>
 </section>
@@ -527,11 +555,11 @@ footer { padding-top: 96px; padding-bottom: 40px; }
 <section class="in sms" id="sms" aria-labelledby="h-sms">
   <div class="sms-grid">
     <div>
-      <h2 id="h-sms" class="rise">Serve sempre il tuo SMS</h2>
-      <p class="lead rise" style="--d:1">L'account Fiscozen usa la verifica in due passaggi. fiscozen-api non la aggira e non la disattiva: quando la sessione scade, serve di nuovo il codice che arriva sul tuo telefono.</p>
+      <h2 id="h-sms" class="rise">SMS a ogni accesso</h2>
+      <p class="lead rise" style="--d:1">L'account Fiscozen usa la verifica in due passaggi. fiscozen-api non la aggira e non la disattiva: al primo accesso e ogni volta che la sessione scade serve il codice che arriva sul tuo telefono.</p>
       <ul class="rise" style="--d:2">
         <li><svg style="color:var(--accent)" aria-hidden="true"><use href="#check"/></svg><span>Alla domanda "ricordare questo dispositivo?" il client risponde no: nessun dispositivo fidato viene registrato sul tuo account.</span></li>
-        <li><svg style="color:var(--accent)" aria-hidden="true"><use href="#check"/></svg><span>La sessione resta in <code>.session.json</code>, con permessi 0600, finché Fiscozen non la fa scadere.</span></li>
+        <li><svg style="color:var(--accent)" aria-hidden="true"><use href="#check"/></svg><span>La sessione è salvata in <code>.session.json</code> e vale finché Fiscozen non la fa scadere. Sui sistemi con permessi POSIX il file è leggibile solo dal proprietario (0600).</span></li>
         <li><svg style="color:var(--accent)" aria-hidden="true"><use href="#check"/></svg><span>Un'automazione senza presidio si ferma alla scadenza: qualcuno deve inserire il nuovo codice.</span></li>
         <li><svg style="color:var(--accent)" aria-hidden="true"><use href="#check"/></svg><span>Dal server MCP l'assistente chiama <code>login_start</code>, ti chiede il codice e lo conferma con <code>login_verify</code>.</span></li>
       </ul>
@@ -552,14 +580,14 @@ footer { padding-top: 96px; padding-bottom: 40px; }
       <div class="otp" role="group" aria-label="Codice SMS di prova, sei cifre">
         <input inputmode="numeric" maxlength="1" aria-label="Cifra 1" value="1"><input inputmode="numeric" maxlength="1" aria-label="Cifra 2" value="2"><input inputmode="numeric" maxlength="1" aria-label="Cifra 3" value="3"><input inputmode="numeric" maxlength="1" aria-label="Cifra 4"><input inputmode="numeric" maxlength="1" aria-label="Cifra 5"><input inputmode="numeric" maxlength="1" aria-label="Cifra 6">
       </div>
-      <p class="otp-state" aria-live="polite">Prova a completare le sei cifre</p>
+      <p class="otp-state" aria-live="polite">Prova con sei cifre inventate: è una simulazione, non inserire un vero codice SMS.</p>
     </div>
   </div>
 </section>
 
 <section class="in fn" id="funzioni" aria-labelledby="h-fn">
   <h2 id="h-fn" class="rise">Tutte le funzioni</h2>
-  <p class="lead rise" style="--d:1">Ogni voce è un metodo PHP e un tool MCP. Le operazioni di scrittura sono segnalate al client, così l'assistente chiede conferma prima di eseguirle.</p>
+  <p class="lead rise" style="--d:1">Ogni funzione è disponibile come metodo PHP e come strumento MCP (qui i nomi MCP; in PHP cambiano leggermente). Le operazioni di scrittura sono segnalate al client: se chiedere conferma dipende dal client e dalle sue impostazioni.</p>
   <div class="fn-grid">
     <div class="rise"><h3>Accesso e profilo</h3><ul>
       <li><code>login_start</code><span>accesso</span></li><li><code>login_verify</code><span>accesso</span></li><li><code>auth_status</code><span>lettura</span></li><li><code>get_profile</code><span>lettura</span></li><li><code>get_year_stats</code><span>lettura</span></li></ul></div>
@@ -580,8 +608,8 @@ footer { padding-top: 96px; padding-bottom: 40px; }
   <div class="in try-grid">
     <div>
       <h2 id="h-try" class="rise">Prepara la prima fattura</h2>
-      <p class="lead rise" style="--d:1">Compila le righe: la pagina calcola totale, marca da bollo e nota del forfettario, poi scrive il codice da incollare.</p>
-      <p class="note rise" style="--d:2">Anteprima locale nel browser: nessun dato lascia questa pagina. L'invio allo SDI è irreversibile e nel server MCP va abilitato esplicitamente.</p>
+      <p class="lead rise" style="--d:1">Compila le righe: l'anteprima calcola il totale, aggiunge la marca da bollo da 2 € quando l'importo supera 77,47 €, inserisce la dicitura del forfettario e scrive il codice da incollare.</p>
+      <p class="note rise" style="--d:2">Anteprima locale nel browser: nessun dato lascia questa pagina. L'invio al Sistema di Interscambio (SdI) non si può annullare dal client e nel server MCP va abilitato esplicitamente.</p>
     </div>
     <form class="panel rise" style="--d:1" data-invoice onsubmit="return false" aria-label="Anteprima fattura">
       <div class="ph"><b>Nuova fattura</b><span>regime forfettario</span></div>
@@ -616,15 +644,31 @@ footer { padding-top: 96px; padding-bottom: 40px; }
       <details><summary>Devo inserire il codice SMS ogni volta?</summary>
         <p>Solo quando la sessione scade. Il client invia il codice una volta e salva la sessione; non registra il dispositivo come fidato, quindi alla scadenza successiva servirà un nuovo SMS.</p></details>
       <details><summary>Dove finiscono password e dati?</summary>
-        <p>Restano in file sul tuo computer o sul tuo server, esclusi da git. Non c'è un servizio intermedio: il client parla direttamente con app.fiscozen.it.</p></details>
-      <details><summary>Può inviare fatture allo SDI da solo?</summary>
-        <p>Solo se lo abiliti. Creare una fattura non la invia. Nel server MCP l'invio compare solo con <code>FISCOZEN_MCP_ALLOW_SDI=1</code> e richiede <code>confirm: true</code>. Una fattura accettata dallo SDI si corregge solo con una nota di credito.</p></details>
+        <p>Credenziali e sessione restano in file sul tuo computer o sul tuo server e servono solo ad autenticarti su Fiscozen; nel repository sono già esclusi da Git, nei tuoi progetti assicurati di fare lo stesso. Non c'è un servizio intermedio. Se usi un assistente AI, verifica quali dati gli vengono trasmessi.</p></details>
+      <details><summary>Può inviare fatture allo SdI da solo?</summary>
+        <p>Solo se lo abiliti. Creare una fattura non la invia. Nel server MCP l'invio compare solo con <code>FISCOZEN_MCP_ALLOW_SDI=1</code> e richiede <code>confirm: true</code>. Una fattura accettata dallo SdI si corregge solo con una nota di credito.</p></details>
       <details><summary>Con quali assistenti funziona?</summary>
-        <p>Con ogni client MCP. In locale via stdio: Claude Desktop, Claude Code, Codex CLI, Cursor. In remoto via HTTP con token: ChatGPT, l'API Responses di OpenAI e il connettore MCP dell'API di Claude.</p></details>
+        <p>Con i client MCP compatibili con i trasporti supportati. In locale via stdio: Claude Desktop, Claude Code, Codex CLI, Cursor. In remoto via HTTP con token: ChatGPT, l'API Responses di OpenAI e il connettore MCP dell'API di Claude.</p></details>
       <details><summary>Posso usarlo e modificarlo?</summary>
         <p>Sì, è rilasciato con licenza MIT: puoi usarlo, modificarlo e redistribuirlo anche in progetti commerciali, mantenendo l'avviso di copyright. È fornito senza garanzie.</p></details>
+      <details><summary>Dove chiedo aiuto?</summary>
+        <p>Scrivi a <a class="link" href="mailto:gabriele@windroses.world">gabriele@windroses.world</a> per domande, aiuto nella configurazione o segnalazioni. Per i bug puoi anche aprire una issue su GitHub. Non inviare mai password, codici SMS o il file <code>.session.json</code>.</p>
+        <p>Per problemi con il tuo account Fiscozen (accesso, fatture, scarti SdI, abbonamento) contatta direttamente Fiscozen: questo progetto non è il loro supporto.</p></details>
       <details><summary>Cosa è stato provato davvero?</summary>
-        <p>Tutti i metodi di lettura e i download, creazione, modifica ed eliminazione di clienti e fatture, e il server MCP su entrambi i trasporti. Non sono stati provati dal vivo l'invio allo SDI, il segna-come-incassata e l'anteprima XML.</p></details>
+        <p>Tutti i metodi di lettura e i download, creazione, modifica ed eliminazione di clienti e fatture, e il server MCP su entrambi i trasporti. Non sono stati provati dal vivo l'invio allo SdI, il segna-come-incassata e l'anteprima XML.</p></details>
+    </div>
+  </div>
+</section>
+
+<section class="in support" id="supporto" aria-labelledby="h-sup">
+  <div class="support-box rise">
+    <div>
+      <h2 id="h-sup">Aiuto e supporto</h2>
+      <p>Domande, configurazione, segnalazioni: rispondo via email. Per i bug c'è anche il tracker su GitHub.</p>
+    </div>
+    <div class="support-actions">
+      <a class="btn" href="mailto:gabriele@windroses.world?subject=fiscozen-api%3A%20richiesta%20di%20supporto">gabriele@windroses.world</a>
+      <a class="btn ghost" href="https://github.com/gabriele-wink/fiscozen-api/issues">Apri una issue</a>
     </div>
   </div>
 </section>
@@ -635,10 +679,11 @@ footer { padding-top: 96px; padding-bottom: 40px; }
   <div class="in">
     <p class="big" aria-hidden="true">fiscozen-api</p>
     <div class="foot">
-      <p><strong>Progetto indipendente e non ufficiale.</strong> fiscozen-api non è affiliato, approvato o supportato da Fiscozen S.p.A. Fiscozen è un marchio dei rispettivi titolari, citato solo per indicare il servizio compatibile. Le fatture create e inviate hanno valore fiscale: controlla sempre ciò che automatizzi.</p>
+      <p><strong>Progetto indipendente e non ufficiale.</strong> fiscozen-api non è affiliato a Fiscozen S.p.A., né sviluppato, approvato o supportato dalla società. Il marchio Fiscozen è citato esclusivamente per indicare la compatibilità. Le fatture create e inviate hanno valore fiscale: controlla sempre ciò che automatizzi.</p>
       <div><b>Pagina</b><a href="#casi">Casi d'uso</a><a href="#come">Come si usa</a><a href="#funzioni">Funzioni</a><a href="#sms">Codice SMS</a></div>
       <div><b>Repository</b><a href="https://github.com/gabriele-wink/fiscozen-api">Codice</a><a href="https://github.com/gabriele-wink/fiscozen-api#readme">Documentazione</a><a href="https://github.com/gabriele-wink/fiscozen-api/blob/main/LICENSE">Licenza MIT</a><a href="https://github.com/gabriele-wink/fiscozen-api/issues">Segnala un problema</a></div>
-      <div><b>Riferimenti</b><a href="https://modelcontextprotocol.io">Model Context Protocol</a><a href="https://www.fiscozen.it">fiscozen.it, sito ufficiale</a><a href="https://www.fatturapa.gov.it">FatturaPA e SDI</a></div>
+      <div><b>Supporto</b><a href="mailto:gabriele@windroses.world">gabriele@windroses.world</a><a href="https://github.com/gabriele-wink/fiscozen-api/issues">Issue su GitHub</a></div>
+      <div><b>Riferimenti</b><a href="https://modelcontextprotocol.io">Model Context Protocol</a><a href="https://www.fiscozen.it">fiscozen.it, sito ufficiale</a><a href="https://www.fatturapa.gov.it">FatturaPA e SdI</a></div>
     </div>
     <div class="copy"><span>Licenza MIT. Software fornito così com'è, senza garanzie.</span><a class="link" href="#top">Torna su</a></div>
   </div>
@@ -681,7 +726,7 @@ document.documentElement.classList.add('js');
   const check = () => {
     const ok = /^\d{6}$/.test(cells.map(c => c.value).join(''));
     st.classList.toggle('ok', ok);
-    st.textContent = ok ? 'Codice confermato, sessione salvata' : 'Prova a completare le sei cifre';
+    st.textContent = ok ? 'Simulazione completata: il client salverebbe la sessione' : 'Prova con sei cifre inventate: è una simulazione, non inserire un vero codice SMS.';
   };
   cells.forEach((c, i) => {
     c.addEventListener('input', () => { c.value = c.value.replace(/\D/g, '').slice(-1); if (c.value && cells[i + 1]) cells[i + 1].focus(); check(); });
@@ -705,7 +750,7 @@ document.documentElement.classList.add('js');
     $('[data-sub]').textContent = eur(sub);
     $('[data-bollo]').textContent = bollo ? eur(2) : 'non dovuta';
     $('[data-total]').textContent = eur(sub + bollo);
-    $('[data-note]').textContent = "Nota NI3: operazione in franchigia IVA e senza ritenuta d'acconto, Art.1 c.54-89 L.190/2014." + (bollo ? ' Sopra 77,47 € la marca da bollo da 2 € è obbligatoria.' : '');
+    $('[data-note]').textContent = "Codice NI3 (natura N2.2 in FatturaPA): operazione in franchigia IVA e senza ritenuta d'acconto, Art.1 c.54-89 L.190/2014." + (bollo ? ' Sopra 77,47 € la marca da bollo da 2 € è obbligatoria.' : '');
     const tax = form.tax.value.trim() || '12345678901';
     out.textContent = fmt === 'php'
       ? `$c = $fz->findCustomer('${tax}');\n$p = $fz->buildInvoice($c['counterpart_version'], [\n` +

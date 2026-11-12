@@ -11,6 +11,11 @@ Key facts:
 - MCP transports: stdio (Claude Desktop, Claude Code, Codex CLI, Cursor) and Streamable HTTP with bearer token (ChatGPT connectors, OpenAI Responses API, Claude API MCP connector).
 - It uses Fiscozen's private web API, which may change without notice.
 
+## Support
+- Help and questions: gabriele@windroses.world
+- Bugs: https://github.com/gabriele-wink/fiscozen-api/issues
+- Problems with a Fiscozen account must go to Fiscozen, not to this project.
+
 ## Docs
 - [Landing page (Italian)](https://gabriele-wink.github.io/fiscozen-api/): use cases, how to use it, SMS disclaimer, interactive invoice preview
 - [README](https://github.com/gabriele-wink/fiscozen-api#readme): install, PHP API, MCP configuration for every client, test status

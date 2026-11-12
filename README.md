@@ -1,7 +1,7 @@
 <p align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="assets/fiscozen-logo-white.svg">
-    <img src="assets/fiscozen-logo-black.svg" alt="Fiscozen" width="320">
+    <source media="(prefers-color-scheme: dark)" srcset="assets/logo-dark.svg">
+    <img src="assets/logo.svg" alt="fiscozen-api" width="300">
   </picture>
 </p>
 
@@ -24,7 +24,7 @@
 > **Progetto non ufficiale.** fiscozen-api è un progetto open source indipendente: non è sviluppato, approvato né supportato da Fiscozen S.p.A. e non ha alcun legame con l'azienda.
 
 > [!WARNING]
-> This project is **not affiliated with, endorsed by or supported by Fiscozen S.p.A.** It uses the private web API of `app.fiscozen.it`, found by observing the web app, and it may break without notice. The Fiscozen name and logo belong to their owners and appear here only to identify the service. Invoices created and sent to SDI are legally binding: review what you automate.
+> This project is **not affiliated with, endorsed by or supported by Fiscozen S.p.A.** It uses the private web API of `app.fiscozen.it`, found by observing the web app, and it may break without notice. The Fiscozen name belongs to its owner and appears here only to identify the service; this project does not use the Fiscozen logo. Invoices created and sent to SDI are legally binding: review what you automate.
 
 ## In italiano
 
@@ -291,7 +291,7 @@ src/
   Mcp/FiscozenTools.php  MCP tool definitions
 bin/                     CLI tools and the stdio MCP server
 public/mcp.php           Streamable HTTP MCP endpoint
-assets/                  logo
+assets/                  project logo (vector)
 ```
 
 ## Test status
@@ -311,6 +311,15 @@ assets/                  logo
 - Keep `FISCOZEN_MCP_ALLOW_SDI` off unless you need it. Even when it's on, the tool requires `confirm: true`.
 - Prefer `FISCOZEN_MCP_READONLY=1` for assistants that only need to answer questions.
 
+## Help & support
+
+Questions, bugs, or help setting it up:
+
+- Email: [gabriele@windroses.world](mailto:gabriele@windroses.world)
+- Bugs and feature requests: [GitHub issues](https://github.com/gabriele-wink/fiscozen-api/issues)
+
+This is community support for an unofficial project. For problems with your Fiscozen account, contact Fiscozen directly.
+
 ## License
 
-[MIT](LICENSE). The Fiscozen name and logo are trademarks of their owners and are not covered by the license.
+[MIT](LICENSE). The Fiscozen name is a trademark of its owner and is not covered by the license.
